@@ -1,0 +1,7 @@
+2023-09-03 10:31:21 - Create PMethod: {"pmethod_id":5,"name":"Pago con tarjeta","code_name":"pago_con_tarjeta","details":"","created_at":"2023-09-03 10:31:21","updated_at":null,"status":1,"sort_order":0,"stores":[1]} by Your Name
+2023-09-03 10:31:39 - Create PMethod: {"pmethod_id":6,"name":"Pago con efectivo ","code_name":"pago_con_efectivo","details":"","created_at":"2023-09-03 10:31:39","updated_at":null,"status":1,"sort_order":0,"stores":[1]} by Your Name
+2023-09-03 10:31:48 - Create PMethod: {"pmethod_id":7,"name":"Pago contra entrega","code_name":"pago_contra_entrega","details":"","created_at":"2023-09-03 10:31:48","updated_at":null,"status":1,"sort_order":0,"stores":[1]} by Your Name
+2023-09-03 11:23:41 - Create Taxrate: {"taxrate_id":6,"taxrate_name":"IV","code_name":"iv","taxrate":"12.0000","status":1,"sort_order":0} by Your Name
+2023-09-03 11:23:50 - Update Taxrate: "6" by Your Name
+2023-09-03 11:24:36 - Update Product: "1" by Your Name
+2023-09-03 11:25:30 - Update Product: "1" by Your Name

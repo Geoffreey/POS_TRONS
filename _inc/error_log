@@ -1,0 +1,4 @@
+[20-Apr-2023 19:31:57 America/Guatemala] PHP Fatal error:  Uncaught Error: Using $this when not in object context in /home/geoflrkf/public_html/_inc/purchase_payment.php:122
+Stack trace:
+#0 {main}
+  thrown in /home/geoflrkf/public_html/_inc/purchase_payment.php on line 122

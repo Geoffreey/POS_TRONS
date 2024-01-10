@@ -1,0 +1,6 @@
+2023-09-08 20:53:55 - Create Supplier: {"sup_id":2,"sup_name":"Bodegas","code_name":"bodegas","sup_mobile":"88888888","sup_email":"godegas@hjp.com","gtin":"","sup_address":"ciudad","sup_city":"","sup_state":"","sup_country":"GT","sup_details":"","created_at":"2023-09-08 20:53:55","s2s_id":2,"store_id":1,"balance":"0.0000","status":1,"sort_order":0,"stores":[1]} by Your Name
+2023-09-08 20:54:24 - Create Supplier: {"sup_id":3,"sup_name":"Rana SA","code_name":"rana_sa","sup_mobile":"99999999","sup_email":"rana@ghdwe.ph","gtin":"","sup_address":"ciduad","sup_city":"","sup_state":"","sup_country":"AD","sup_details":"","created_at":"2023-09-08 20:54:24","s2s_id":3,"store_id":1,"balance":"0.0000","status":1,"sort_order":0,"stores":[1]} by Your Name
+2023-09-08 20:54:58 - Update Product: "951" by Your Name
+2023-09-08 20:55:09 - Update Product: "44" by Your Name
+2023-09-08 20:55:20 - Update Product: "45" by Your Name
+2023-09-08 20:55:32 - Update Product: "31" by Your Name

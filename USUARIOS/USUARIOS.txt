@@ -1,0 +1,4 @@
+Role 	Username 	Password
+Admin 	admin@gmail.com 	
+Cashier 	cashier@gmail.com 	
+Salesman 	salesman@gmail.com 	
