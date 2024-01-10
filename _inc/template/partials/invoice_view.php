@@ -57,7 +57,7 @@ echo $parser->parse($template, $data);
         <td colspan="2">
           <br>
           <p class="powered-by">
-            <small>&copy; web.ferrocasa.pw</small>
+            <small>&copy; ttrons.com</small>
           </p>
         </td>
       </tr>
