@@ -28,7 +28,9 @@ if (user_group_id() != 1 && !has_permission('access', 'read_purchase_report')) {
  */
 
 $where_query = "purchase_info.inv_type != 'expense' AND purchase_item.store_id = " . store_id();
-if (isset($request->get['pid']) && $request->get['pid']&& $request['pid'] !='null') {
+if(is_array($request) && $request['pid'] !='null'){
+  $where_query .= " AND item_id = " . $request['pid'];
+} else if (isset($request->get['pid']) && $request->get['pid']) {
   $where_query .= " AND item_id = " . $request->get['pid'];
 }
 if (from()) {

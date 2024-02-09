@@ -86,7 +86,7 @@ include ("left_sidebar.php");
 				                    <option value="null"><?php echo trans('text_select'); ?></option>
 				                    <?php foreach (get_customers() as $the_customer) : ?>
 				                      <option value="<?php echo $the_customer['customer_id'];?>">
-				                      <?php echo $the_customer['customer_name'];?>
+				                      <?php echo $the_customer['customer_name'].' - '.$the_customer['customer_mobile'];?>
 				                    </option>
 				                  <?php endforeach;?>
 				                  </select>
@@ -96,6 +96,17 @@ include ("left_sidebar.php");
 								  <select id="currier" class="form-control" name="currier" >
 				                    <option value="null"><?php echo trans('text_select'); ?></option>
 				                    <?php foreach (Currier as $k=>$v)  : ?>
+				                    <option value="<?= $k; ?>">
+				                      <?= $v; ?>
+				                    </option>
+				                  	<?php endforeach;?>
+				                  </select>
+								  <div class="input-group-addon no-print" style="padding: 2px 8px; border-right: 0;">
+				                    <i class="fa fa-truck" id="addIcon" style="font-size: 1.2em;"></i>
+				                  </div>
+								  <select id="estadoEnvio" class="form-control" name="estadoEnvio" >
+				                    <option value="null"><?php echo trans('text_select'); ?></option>
+				                    <?php foreach (EstadoEnvio as $k=>$v)  : ?>
 				                    <option value="<?= $k; ?>">
 				                      <?= $v; ?>
 				                    </option>
@@ -202,8 +213,14 @@ include ("left_sidebar.php");
 										TIPO DE ENVIO
 							        </th>
 									<th class="w-7">
+										ESTADO ENVIO
+							        </th>
+									<th class="w-7">
 							        	<?php //echo trans('label_status'); ?>
 										RED SOCIAL
+							        </th>
+									<th class="w-7">
+							        	Monto
 							        </th>
 							        <th class="w-7">
 							        	<?php echo trans('label_status'); ?>
@@ -241,8 +258,14 @@ include ("left_sidebar.php");
 										TIPO DE ENVIO
 							        </th>
 									<th class="w-7">
+										ESTADO ENVIO
+							        </th>
+									<th class="w-7">
 							        	<?php //echo trans('label_status'); ?>
 										RED SOCIAL
+							        </th>
+									<th class="w-7">
+							        	Monto
 							        </th>
 							        <th class="w-7">
 							        	<?php echo trans('label_status'); ?>

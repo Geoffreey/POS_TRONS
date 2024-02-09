@@ -45,6 +45,7 @@ function (
     var $to = window.getParameterByName("to");
     var $customerId = window.getParameterByName("customer_id");
     var $currier = window.getParameterByName("currier");
+    var $estadoEnvio = window.getParameterByName("estadoEnvio");
     var $social = window.getParameterByName("social");
 
     //================
@@ -56,7 +57,7 @@ function (
         "processing": true,
         "dom": "lfBrtip",
         "serverSide": true,
-        "ajax": API_URL + "/_inc/invoice.php?from="+$from+"&to="+$to+"&type="+$type+"&customer_id="+$customerId+"&currier="+$currier+"&social="+$social,
+        "ajax": API_URL + "/_inc/invoice.php?from="+$from+"&to="+$to+"&type="+$type+"&customer_id="+$customerId+"&currier="+$currier+"&estadoEnvio="+$estadoEnvio+"&social="+$social,
         "fixedHeader": true,
         "order": [[ 0, "desc"]],
         "aLengthMenu": [
@@ -65,7 +66,7 @@ function (
         ],
         "columnDefs": [
             {"targets": [1, 7, 8, 9, 10], "orderable": false},
-            {"className": "text-center", "targets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+            {"className": "text-center", "targets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
             { "visible": false,  "targets": hideColumsArray},
             { 
                 "targets": [0],
@@ -133,13 +134,27 @@ function (
                    $(td).attr('data-title', $("#invoice-invoice-list thead tr th:eq(10)").html());
                 }
             },
+            { 
+                "targets": [11],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#invoice-invoice-list thead tr th:eq(11)").html());
+                }
+            },
+            { 
+                "targets": [12],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#invoice-invoice-list thead tr th:eq(11)").html());
+                }
+            },
         ],
         "aoColumns": [
             {data : "invoice_id"},
             {data : "created_at"},
             {data : "customer_name"},
             {data : "currier"},
+            {data : "estadoEnvio"},
             {data : "social"},
+            {data : "amount"},
             {data : "status"},
             {data : "btn_pay"},
             {data : "btn_return"},
@@ -399,22 +414,29 @@ function (
         e.preventDefault();
         e.stopPropagation();
         //var data = e.params.data;
-        var cid=$('#customer_id').val(),currier=$('#currier').val(),social=$('#social').val();
-        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&social="+social;
+        var cid=$('#customer_id').val(),currier=$('#currier').val(),estadoEnvio=$('#estadoEnvio').val(),social=$('#social').val();
+        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&estadoEnvio="+estadoEnvio+"&social="+social;
     });
     $(document).delegate("#currier", "select2:select", function (e) {
         e.preventDefault();
         e.stopPropagation();
         //var data = e.params.data;
-        var cid=$('#customer_id').val(),currier=$('#currier').val(),social=$('#social').val();
-        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&social="+social;
+        var cid=$('#customer_id').val(),currier=$('#currier').val(),estadoEnvio=$('#estadoEnvio').val(),social=$('#social').val();
+        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&estadoEnvio="+estadoEnvio+"&social="+social;
+    });
+    $(document).delegate("#estadoEnvio", "select2:select", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        //var data = e.params.data;
+        var cid=$('#customer_id').val(),currier=$('#currier').val(),estadoEnvio=$('#estadoEnvio').val(),social=$('#social').val();
+        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&estadoEnvio="+estadoEnvio+"&social="+social;
     });
     $(document).delegate("#social", "select2:select", function (e) {
         e.preventDefault();
         e.stopPropagation();
         //var data = e.params.data;
-        var cid=$('#customer_id').val(),currier=$('#currier').val(),social=$('#social').val();
-        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&social="+social;
+        var cid=$('#customer_id').val(),currier=$('#currier').val(),estadoEnvio=$('#estadoEnvio').val(),social=$('#social').val();
+        window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&estadoEnvio="+estadoEnvio+"&social="+social;
     });
 
     if (window.getParameterByName('customer_id')) {
@@ -422,6 +444,9 @@ function (
     }
     if (window.getParameterByName('currier')) {
         $("#currier").val(window.getParameterByName('currier')).trigger("change");
+    }
+    if (window.getParameterByName('estadoEnvio')) {
+        $("#estadoEnvio").val(window.getParameterByName('estadoEnvio')).trigger("change");
     }
     if (window.getParameterByName('social')) {
         $("#social").val(window.getParameterByName('social')).trigger("change");

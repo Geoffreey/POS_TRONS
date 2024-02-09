@@ -39,6 +39,16 @@ $customer_id = isset($request->get['customer_id']) ? $request->get['customer_id'
 					}
 					?>
 				</select>
+				<label>ESTADO DE ENVIO</label>
+				<select class="form-control select2" name="estado-envio" id="estado-envio">
+					<?php
+					foreach (EstadoEnvio as $k=>$v) { 
+						?>
+						<option value="<?= $k; ?>"><?= $v; ?></option>
+						<?php
+					}
+					?>
+				</select>
 				<label>RED SOCIAL</label>
 				<select class="form-control select2" name="social-select" id="social-select">
 					<option value="null">Seleccione</option>

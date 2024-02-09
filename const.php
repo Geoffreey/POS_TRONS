@@ -13,4 +13,9 @@ const Social = [
     'XTW' => 'X (Twitter)',
     'TIK' => 'Tiktok'
 ];
+const EstadoEnvio = [
+    '0' => 'No Entregado',
+    '1' =>'En Ruta',
+    '2' => 'Entregado'
+];
 ?>

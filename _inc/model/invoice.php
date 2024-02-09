@@ -118,6 +118,7 @@ class ModelInvoice extends Model
         $installment_interest_amount = 0;
         $currier = $request->post['currier-select'] ? $request->post['currier-select'] : null;
         $social = $request->post['social-select'] ? $request->post['social-select'] : null;
+        $estadoEnvio = $request->post['estado-envio'] ? $request->post['estado-envio'] : null;
         if (INSTALLMENT && $is_installment_order) {
             $installment_initial_amount = $paid_amount;
             $installment_duration = (int)$request->post['installment_duration'];
@@ -307,8 +308,8 @@ class ModelInvoice extends Model
         $capital = ($total_purchase_price / ($subtotal -$discount_amount)) * ($paid_amount - $shipping_amount - $others_charge);
         $profit = ($subtotal -$discount_amount) - $total_purchase_price;
         
-        $statement = $this->db->prepare("INSERT INTO `selling_info` (invoice_id, store_id, customer_id, customer_mobile, invoice_note, total_items, payment_status, is_installment, created_by, created_at, currier, social) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $statement->execute(array($invoice_id, $store_id, $customer_id, $customer_mobile, $invoice_note, $total_items, $payment_status, $is_installment_order, $user_id, $created_at, $currier, $social));
+        $statement = $this->db->prepare("INSERT INTO `selling_info` (invoice_id, store_id, customer_id, customer_mobile, invoice_note, total_items, payment_status, is_installment, created_by, created_at, currier, social, estadoEnvio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $statement->execute(array($invoice_id, $store_id, $customer_id, $customer_mobile, $invoice_note, $total_items, $payment_status, $is_installment_order, $user_id, $created_at, $currier, $social, $estadoEnvio));
         
         $statement = $this->db->prepare("INSERT INTO `selling_price` (invoice_id, store_id, subtotal, discount_type, discount_amount, interest_amount, interest_percentage, item_tax, order_tax, cgst, sgst, igst, total_purchase_price, shipping_type, shipping_amount, others_charge, previous_due, payable_amount, paid_amount, due, prev_due_paid, profit, balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $statement->execute(array($invoice_id, $store_id, $subtotal, $discount_type, $discount_amount, $installment_interest_amount, $installment_interest_percentage, $item_tax, $order_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $shipping_type, $shipping_amount, $others_charge, $previous_due, $payable_amount, $paid_amount, $due, $prev_due_paid, $profit, $balance));
