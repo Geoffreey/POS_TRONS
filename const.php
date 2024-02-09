@@ -5,7 +5,7 @@ const Currier =  [
     'FEDEX' => 'Fedex',
     'GUATEX' => 'Guatex',
     'INTERNO' => 'Mensajería Interna',
-    'MENSAJERIA MUNICIPIOS' => 'Mensajeria Municipios'
+    'MSJRM' => 'Mensajeria Municipios'
 
 ];
 const Social = [
