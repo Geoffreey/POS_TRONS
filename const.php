@@ -1,6 +1,6 @@
 <?php
 const Currier =  [
-    'CARGO' => 'Cargo Express',
+    'CARGO' => 'Cargo Expreso',
     'FORZA' => 'Forza',
     'FEDEX' => 'Fedex',
     'GUATEX' => 'Guatex',
@@ -13,7 +13,9 @@ const Social = [
     'FBD' =>'FB duap',
     'INS' => 'Instagram',
     'XTW' => 'X (Twitter)',
-    'TIK' => 'Tiktok'
+    'TIK' => 'Tiktok',
+    'WAP' => 'WhatsApp',
+    'WS' => 'Sitio Web'
 ];
 const EstadoEnvio = [
     '0' => 'No Entregado',
