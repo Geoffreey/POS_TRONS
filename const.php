@@ -4,7 +4,9 @@ const Currier =  [
     'FORZA' => 'Forza',
     'FEDEX' => 'Fedex',
     'GUATEX' => 'Guatex',
-    'INTERNO' => 'Mensajería Interna'
+    'INTERNO' => 'Mensajería Interna',
+    'MENSAJERIA MUNICIPIOS' => 'Mensajeria Municipios'
+
 ];
 const Social = [
     'FBT' => 'FB ttrons',
