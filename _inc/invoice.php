@@ -477,7 +477,7 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 }
 
 // tabla de base de datos a utilizar
-$table = "(SELECT selling_info.*, (select amount from sell_logs where ref_invoice_id=selling_info.invoice_id) as amount FROM `selling_info` WHERE {$where_query}) as selling_info";
+$table = "(SELECT selling_info.*, (select sum(amount) from sell_logs where ref_invoice_id=selling_info.invoice_id) as amount FROM `selling_info` WHERE {$where_query}) as selling_info";
 
 // Llave principal de la tabla
 $primaryKey = 'info_id';
