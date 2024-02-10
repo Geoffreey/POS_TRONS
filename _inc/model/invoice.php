@@ -118,7 +118,7 @@ class ModelInvoice extends Model
         $installment_interest_amount = 0;
         $currier = $request->post['currier-select'] ? $request->post['currier-select'] : null;
         $social = $request->post['social-select'] ? $request->post['social-select'] : null;
-        $estadoEnvio = $request->post['estado-envio'] ? $request->post['estado-envio'] : null;
+        $estadoEnvio = $request->post['estado-envio'] ? $request->post['estado-envio'] : 0;
         if (INSTALLMENT && $is_installment_order) {
             $installment_initial_amount = $paid_amount;
             $installment_duration = (int)$request->post['installment_duration'];
