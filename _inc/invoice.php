@@ -477,7 +477,7 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 }
 
 // tabla de base de datos a utilizar
-$table = "(SELECT selling_info.*, (select sum(amount) from sell_logs where ref_invoice_id=selling_info.invoice_id) as amount FROM `selling_info` WHERE {$where_query}) as selling_info";
+$table = "(SELECT selling_info.*, (select sum(item_price*item_quantity) from selling_item  where invoice_id=selling_info.invoice_id) as amount FROM `selling_info` WHERE {$where_query}) as selling_info";
 
 // Llave principal de la tabla
 $primaryKey = 'info_id';
@@ -560,7 +560,16 @@ $columns = array(
         'dt' => 'estadoEnvio' ,
         'formatter' => function($d, $row) {
             if($row['estadoEnvio']!='null' and strlen($row['estadoEnvio'])>0){
-                return EstadoEnvio[$row['estadoEnvio']];
+                $selectEE='<select id="changeEE" name="changeEE" >';
+                foreach (EstadoEnvio as $key => $value) {
+                    $selectEE.='<option value="'.$key.'" ';
+                    if($row['estadoEnvio']==$key){
+                        $selectEE.=' selected ';
+                    }
+                    $selectEE.='>'.$value.'</option>';
+                }
+                $selectEE.='</select>';
+                return $selectEE;
             } else {
                 return $row['estadoEnvio'];
             }

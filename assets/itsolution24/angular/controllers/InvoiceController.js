@@ -48,6 +48,10 @@ function (
     var $estadoEnvio = window.getParameterByName("estadoEnvio");
     var $social = window.getParameterByName("social");
 
+    var sendChangeEE = ()=>{
+
+    }
+
     //================
     // Start datatable
     //================
@@ -172,6 +176,17 @@ function (
                     typeof i === "number" ?
                         i : 0;
             };
+            // Total over all pages at column 6
+            pageTotal = api
+                .column( 6, { page: "current"} )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+            // Actualizar pie de página
+            $( api.column( 6 ).footer() ).html(
+                window.formatDecimal(pageTotal, 2)
+            );
         },
         "pageLength": window.settings.datatable_item_limit,
         "buttons": [
@@ -437,6 +452,23 @@ function (
         //var data = e.params.data;
         var cid=$('#customer_id').val(),currier=$('#currier').val(),estadoEnvio=$('#estadoEnvio').val(),social=$('#social').val();
         window.location = window.baseUrl+"/admin/invoice.php?customer_id="+cid+"&currier="+currier+"&estadoEnvio="+estadoEnvio+"&social="+social;
+    });
+
+    $(document).delegate("#changeEE", "change", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var d = dt.DataTable().row( $(this).closest("tr") ).data();
+        if (confirm("Seguro de cambiar el estado de envio?") == true) {
+            $http({
+                url: window.baseUrl + "/_inc/changeEE.php?action_type=UPDATEINVOICEINFO&invoice_id=" + d.invoice_id + "&estadoEnvio=" + e.target.value,
+                method: "GET"
+            })
+            .then(function(response, status, headers, config) {
+                
+            }, function(error) {
+                window.swal("Oops!", error.data.errorMsg, "error");
+            });
+        } 
     });
 
     if (window.getParameterByName('customer_id')) {
