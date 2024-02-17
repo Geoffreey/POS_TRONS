@@ -122,7 +122,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST')
     }
 
     // Validate payable amount
-    if (!validateFloat($request->post['payable-amount'])) {
+    if (!validateFloat($request->post['payable-amount']) && $request->post['pmethod-id']!=5) {
       throw new Exception(trans('error_invoice_payable_amount'));
     }
 

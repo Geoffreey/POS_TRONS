@@ -74,7 +74,6 @@ window.angularApp.factory("PaymentFormModal", ["API_URL", "window", "jQuery", "$
                        $(document).find("body").removeClass("overlay-loader");
                     });
                 };
-
                 $scope.checkout = function() {
                     $(document).find(".modal").addClass("overlay-loader");
                     var form = $("#checkout-form");
@@ -159,7 +158,7 @@ window.angularApp.factory("PaymentFormModal", ["API_URL", "window", "jQuery", "$
                         $(document).find(".modal").removeClass("overlay-loader");
                     });
                 };
-
+                
                 $scope.checkoutWithFullPaid = function() {
                     $scope.paidAmount = $scope.totalPayable;
                     setTimeout(function() {
