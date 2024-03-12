@@ -19,5 +19,9 @@ function (
 ) {
     "use strict";
 
-    //...
+    $(document).delegate("#selectMonthChange", "change", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        window.location.href='?month='+e.target.value;
+    });
 }]);

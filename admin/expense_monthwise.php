@@ -46,9 +46,6 @@ include ("left_sidebar.php") ;
           <?php echo trans('text_dashboard'); ?>
         </a>
       </li>
-      <li class="active">
-        <?php echo trans('text_expense_monthwise_title'); ?>
-      </li>
     </ol>
   </section>
   <!-- Fin del encabezado de contenido -->
@@ -65,16 +62,35 @@ include ("left_sidebar.php") ;
       </div>
     </div>
     <?php endif; ?>
-
+      <?php 
+      $year = from() ? date('Y', strtotime(from())) : year();
+      $month = from() ? date('m', strtotime(from())) : month();
+      if(isset($_REQUEST['month'])){
+        $month=$_REQUEST['month'];
+      }
+      $days_in_month = get_total_day_in_month();
+      ?>
     <div class="row" id="expense-monthwise-report">
       <div class="col-xs-12">
         <div class="box box-success">
           <div class="box-header">
+            <select id='selectMonthChange'>
+              <option value='01' <?= ($month=='01') ? 'selected' : null; ?>>Enero</option>
+              <option value='02' <?= ($month=='02') ? 'selected' : null; ?>>Febrero</option>
+              <option value='03' <?= ($month=='03') ? 'selected' : null; ?>>Marzo</option>
+              <option value='04' <?= ($month=='04') ? 'selected' : null; ?>>Abril</option>
+              <option value='05' <?= ($month=='05') ? 'selected' : null; ?>>Mayo</option>
+              <option value='06' <?= ($month=='06') ? 'selected' : null; ?>>Junio</option>
+              <option value='07' <?= ($month=='07') ? 'selected' : null; ?>>Julio</option>
+              <option value='08' <?= ($month=='08') ? 'selected' : null; ?>>Agosto</option>
+              <option value='09' <?= ($month=='09') ? 'selected' : null; ?>>Septiembre</option>
+              <option value='10' <?= ($month=='10') ? 'selected' : null; ?>>Octubre</option>
+              <option value='11' <?= ($month=='11') ? 'selected' : null; ?>>Noviembre</option>
+              <option value='12' <?= ($month=='12') ? 'selected' : null; ?>>Diciembre</option>
+            </select>
             <h3 class="box-title">
               <?php 
-              $year = from() ? date('Y', strtotime(from())) : year();
-              $month = from() ? date('m', strtotime(from())) : month();
-              $days_in_month = get_total_day_in_month();
+              
               echo date("F", mktime(0, 0, 0, $month, 10)).', '.$year;
               if (to()) {
                 echo '<i> <small>to</small> </i>';
@@ -84,6 +100,7 @@ include ("left_sidebar.php") ;
               }
               ?>
             </h3>
+            
             <a class="pull-right pointer no-print" onClick="window.printContent('expense-monthwise-report', {title:'<?php echo trans('title_expense_monthwise');?>', 'headline':'<?php echo trans('title_expense_monthwise');?>', screenSize:'fullScreen'});">
               <i class="fa fa-print"></i> <?php echo trans('text_print');?>
             </a>
