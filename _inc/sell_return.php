@@ -254,8 +254,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     $statement = db()->prepare("UPDATE `selling_price` SET `due` = ? WHERE `store_id` = ? AND `invoice_id` = ?");
     $statement->execute(array($due, $store_id, $invoice_id));
 
-    $statement = db()->prepare("INSERT INTO `returns` SET `store_id` = ?, `reference_no` = ?, `invoice_id` = ?, `customer_id` = ?, `note` = ?, `total_item` = ?, `total_quantity` = ?, `subtotal` = ?, `total_amount` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `total_purchase_price` = ?, `profit` = ?, `created_by` = ?");
-    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id));
+    $statement = db()->prepare("INSERT INTO `returns` SET `store_id` = ?, `reference_no` = ?, `invoice_id` = ?, `customer_id` = ?, `note` = ?, `total_item` = ?, `total_quantity` = ?, `subtotal` = ?, `total_amount` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `total_purchase_price` = ?, `profit` = ?, `created_by` = ?, `created_at` = ?");
+    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id,date('Y-m-d H:i:s',time())));
 
     if ($return_amount > 0) {
       $is_profit = 0;
