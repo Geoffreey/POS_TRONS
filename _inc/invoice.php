@@ -477,7 +477,8 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 }
 
 // tabla de base de datos a utilizar
-$table = "(SELECT selling_info.*, (select sum((item_price*item_quantity)-(((item_price*item_quantity)*item_discount)/100)) from selling_item  where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
+//(select sum((item_price*(item_quantity-return_quantity))-(((item_price*(item_quantity-return_quantity))*item_discount)/100)) from selling_item  where invoice_id=selling_info.invoice_id) as amount
+$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
 
 // Llave principal de la tabla
 $primaryKey = 'info_id';
