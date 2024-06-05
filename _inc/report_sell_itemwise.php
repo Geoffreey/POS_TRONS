@@ -40,13 +40,27 @@ $to = to();
 $where_query .= date_range_filter($from, $to);
 }
 
+
+
 // tabla de base de datos a utilizar
-$table = "(SELECT @sl:=@sl+1 AS sl, selling_info.invoice_id, selling_info.created_at, selling_item.id, selling_item.item_id, selling_item.item_name, SUM(selling_item.item_quantity) as total_item, SUM(selling_item.item_discount) as discount, SUM(selling_item.item_tax) as tax, SUM(selling_item.item_purchase_price) as purchase_price, SUM(selling_item.item_total) as sell_price FROM selling_item 
+$table = "(
+  SELECT @sl:=@sl+1 AS sl, 
+  selling_info.invoice_id, 
+  selling_info.created_at, 
+  selling_item.id, 
+  selling_item.item_id, 
+  selling_item.item_name, 
+  SUM(selling_item.item_quantity) as total_item, 
+  SUM(selling_item.item_discount) as discount, 
+  SUM(selling_item.item_tax) as tax, 
+  SUM(selling_item.item_purchase_price) as purchase_price, 
+  SUM((selling_item.item_total-selling_item.item_discount)) as sell_price 
+  FROM selling_item 
   LEFT JOIN selling_info ON (selling_item.invoice_id = selling_info.invoice_id)
   LEFT JOIN selling_price ON (selling_item.invoice_id = selling_price.invoice_id)
   WHERE $where_query
-  GROUP BY selling_item.item_id
-  ORDER BY sell_price DESC) as selling_item";
+  GROUP BY selling_info.created_at
+  ORDER BY sell_price DESC) as selling_item";//selling_item.item_id
 
 // Llave principal de la tabla
 $primaryKey = 'id';

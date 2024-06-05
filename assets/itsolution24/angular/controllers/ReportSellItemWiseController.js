@@ -93,6 +93,12 @@ function (
                    $(td).attr('data-title', $("#report-report-list thead tr th:eq(5)").html());
                 }
             },
+            { 
+                "targets": [6],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#report-report-list thead tr th:eq(6)").html());
+                }
+            },
         ],
         "aoColumns": [
             {data : "sl"},
@@ -100,6 +106,7 @@ function (
             {data : "item_name"},
             {data : "total_item"},
             {data : "purchase_price"},
+            {data : "discount"},
             {data : "sell_price"}
         ],
         "footerCallback": function ( row, data, start, end, display ) {
@@ -136,7 +143,6 @@ function (
             $( api.column( 4 ).footer() ).html(
                 window.formatDecimal(pageTotal, 2)
             );
-
             // Total over all pages at column 5
             pageTotal = api
                 .column( 5, { page: "current"} )
@@ -148,6 +154,18 @@ function (
             $( api.column( 5 ).footer() ).html(
                 window.formatDecimal(pageTotal, 2)
             );
+            // Total over all pages at column 6
+            pageTotal = api
+                .column( 6, { page: "current"} )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+            // Actualizar pie de página
+            $( api.column( 6 ).footer() ).html(
+                window.formatDecimal(pageTotal, 2)
+            );
+
         },
         "pageLength": window.settings.datatable_item_limit,
         "buttons": [

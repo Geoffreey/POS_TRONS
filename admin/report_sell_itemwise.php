@@ -116,13 +116,13 @@ include ("left_sidebar.php") ;
           <div class="box-body">
             <div class="table-responsive">  
               <?php
-                  $print_columns = '0,1,2,3,4,5';
+                  $print_columns = '0,1,2,3,4,5,6';
                   if (user_group_id() != 1) {
                     if (! has_permission('access', 'show_purchase_price')) {
                       $print_columns = str_replace('4,', '', $print_columns);
                     }
                   }
-                  $hide_colums = "4,";
+                  $hide_colums = "";//"4,";
                   if (user_group_id() != 1) {
                     if (!has_permission('access', 'show_purchase_price')) {
                       $hide_colums .= "4,";
@@ -148,6 +148,9 @@ include ("left_sidebar.php") ;
                       <?php echo trans('label_purchase_price'); ?>
                     </th>
                     <th class="w-20">
+                      Descuentos
+                    </th>
+                    <th class="w-20">
                       <?php echo trans('label_selling_price'); ?>
                     </th>
                   </tr>
@@ -168,6 +171,9 @@ include ("left_sidebar.php") ;
                     </th>
                     <th class="w-20">
                       <?php echo trans('label_purchase_price'); ?>
+                    </th>
+                    <th class="w-20">
+                      Descuentos
                     </th>
                     <th class="w-20">
                       <?php echo trans('label_selling_price'); ?>
