@@ -26,7 +26,7 @@ class ModelSellreturn extends Model
 	public function getInvoiceInfo($invoice_id, $store_id = null) 
 	{
 		$store_id = $store_id ? $store_id : store_id();
-		$statement = $this->db->prepare("SELECT * FROM `selling_info` 
+		$statement = $this->db->prepare("SELECT * FROM `returns` 
 			WHERE `store_id` = ? AND `invoice_id` = ?");
 		$statement->execute(array($store_id, $invoice_id));
 		return $statement->fetch(PDO::FETCH_ASSOC);
