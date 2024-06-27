@@ -349,14 +349,14 @@ function (
         $scope._calcShippingAmount();
         $scope._calcOthersCharge();
         $scope.payable = ($scope.totalAmount  + $scope.taxAmount);
-        if ($scope.payable != 0 && ($scope.discountAmount >= $scope.payable)) {
+        /*if ($scope.payable != 0 && ($scope.discountAmount >= $scope.payable)) {
             $scope.discountAmount = 0;
             $scope.discountInput = 0;
             if (window.store.sound_effect == 1) {
                 window.storeApp.playSound("error.mp3");
             }
             window.toastr.error("Discount amount must be less than payable amount", "Warning!");
-        }
+        }*/
         if ($scope.payable != 0 && ($scope.shippingAmount >= $scope.payable)) {
             $scope.shippingAmount = 0;
             $scope.shippingInput = 0;

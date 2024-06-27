@@ -5,7 +5,7 @@ define('INSTALLED', true);
 'host' => 'localhost',
 'db' => 'posmoderno',
 'user' => 'root',
-'pass' => 'root',
+'pass' => 'Makoto@21',
 'port' => '3306'
 	);
 
