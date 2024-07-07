@@ -783,6 +783,15 @@
             </li>
           <?php endif; ?>
 
+          <?php if (user_group_id() == 1 || has_permission('access', 'read_sell_report')) : ?>
+            <li class="<?php echo current_nav() == 'report_sell_itemwise_month' ? ' active' : null; ?>">
+              <a href="report_sell_itemwise_month.php"> 
+                <svg class="svg-icon"><use href="#icon-report"></svg>
+                <?php echo trans('menu_sell_report').' MES'; ?>
+              </a>
+            </li>
+          <?php endif; ?>
+
           <?php if (user_group_id() == 1 || has_permission('access', 'read_purchase_report')) : ?>
             <li class="<?php echo current_nav() == 'report_purchase_itemwise' || current_nav() == 'report_purchase_categorywise' || current_nav() == 'report_purchase_supplierwise' ? 'active' : null; ?>">
               <a href="report_purchase_supplierwise.php">
