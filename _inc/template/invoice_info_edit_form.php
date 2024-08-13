@@ -60,6 +60,7 @@
 <form class="form-horizontal" id="invoice-form" action="invoice.php" method="post">
   <input type="hidden" id="action_type" name="action_type" value="UPDATEINVOICEINFO">
   <input type="hidden" id="invoice_id" name="invoice_id" value="<?php echo $invoice['invoice_id']; ?>">
+  <input type="hidden" id="discount_amount" name="discount_amount" value="<?= $invoice['discount_amount']; ?>"  />
   <div class="box-body">
 
       <div class="form-group">
@@ -96,14 +97,14 @@
         </div>
       </div>
 
-      <!-- <div class="form-group">
+      <!--div class="form-group">
         <label for="discount_amount" class="col-sm-3 control-label">
           <?php echo trans('label_discount_amount'); ?>
         </label>
         <div class="col-sm-7">
           <input type="text" class="form-control" id="discount_amount" value="<?php echo currency_format($invoice['discount_amount']); ?>" name="discount_amount" onClick="this.select();" onclick="this.select();" onkeypress="return IsNumeric(event);" ondrop="return false;" onpaste="return false;" onKeyUp="if(this.value<0){this.value='1';}" required>
         </div>
-      </div> -->
+      </div-->
 
       <div class="form-group">
         <label class="col-sm-3 control-label"></label>

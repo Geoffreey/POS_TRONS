@@ -195,11 +195,11 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
         $status = $request->post['status'];
         $subtotal = $invoice_info['subtotal'];
         $payable_amount = $invoice_info['payable_amount'];
-        $discount_amount = 0;
+        $discount_amount = $request->post['discount_amount'];
 
         $Hooks->do_action('Before_Update_Invoice_Info', $invoice_id);
 
-        $payable_amount = $subtotal - $discount_amount;
+        $payable_amount = $subtotal - ($subtotal*($discount_amount/100));
         $paid_amount = $invoice_info['paid_amount'];
         $due_paid = $invoice_info['due_paid'];
         $due = 0;
