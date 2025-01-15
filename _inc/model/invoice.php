@@ -574,7 +574,7 @@ class ModelInvoice extends Model
     public function getInvoiceInfo($invoice_id, $store_id = null)
     {
         $store_id = $store_id ? $store_id : store_id();
-        $statement = $this->db->prepare("SELECT `selling_info`.*, `selling_price`.*, `customers`.`customer_id`, `customers`.`customer_name`, `customers`.`customer_mobile` AS `mobile_number`, `customers`.`customer_email` FROM `selling_info` LEFT JOIN `selling_price` ON `selling_info`.`invoice_id` = `selling_price`.`invoice_id` LEFT JOIN `customers` ON `selling_info`.`customer_id` = `customers`.`customer_id` WHERE `selling_info`.`store_id` = ? AND (`selling_info`.`invoice_id` = ? OR (`selling_info`.`customer_id` = ?) AND `selling_info`.`inv_type` = 'sell') ORDER BY `selling_info`.`invoice_id` DESC");
+        $statement = $this->db->prepare("SELECT `selling_info`.*, `selling_price`.*, `customers`.`customer_id`, `customers`.`customer_name`, `customers`.`customer_mobile` AS `mobile_number`, `customers`.`customer_email` FROM `selling_info` LEFT JOIN `selling_price` ON `selling_info`.`invoice_id` = `selling_price`.`invoice_id` LEFT JOIN `customers` ON `selling_info`.`customer_id` = `customers`.`customer_id` WHERE `selling_info`.`store_id` = ? AND (`selling_info`.`invoice_id` = ? OR `selling_info`.`customer_id` = ?) AND `selling_info`.`inv_type` = 'sell' ORDER BY `selling_info`.`invoice_id` DESC");
         $statement->execute(array($store_id, $invoice_id, $invoice_id));
         $invoice = $statement->fetch(PDO::FETCH_ASSOC);
         if ($invoice) {
