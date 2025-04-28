@@ -470,6 +470,8 @@ function (
             });
         } 
     });
+    
+    
 
     if (window.getParameterByName('customer_id')) {
         $("#customer_id").val(window.getParameterByName('customer_id')).trigger("change");

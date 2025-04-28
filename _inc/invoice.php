@@ -51,6 +51,33 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
             throw new Exception(trans('error_invoice_not_found'));
         }
         $due = $selling_info['due'];
+        
+        // Obtener la información de la factura antes de eliminarla
+$statement = db()->prepare("
+    SELECT si.*, sp.paid_amount 
+    FROM selling_info si
+    LEFT JOIN selling_price sp ON si.invoice_id = sp.invoice_id
+    WHERE si.store_id = ? AND si.invoice_id = ?
+");
+$statement->execute(array($store_id, $invoice_id));
+$selling_info = $statement->fetch(PDO::FETCH_ASSOC);
+
+if (!$selling_info) {
+    throw new Exception(trans('error_invoice_not_found'));
+}
+
+// Guardar la factura en el log de auditoría antes de eliminarla
+$invoice_data = json_encode($selling_info);
+$deleted_by = $user_id; // ID del usuario que elimina la factura
+
+$statement = db()->prepare("INSERT INTO deleted_invoices_log (invoice_id, customer_id, total_amount, deleted_by, invoice_data) VALUES (?, ?, ?, ?, ?)");
+$statement->execute(array(
+    $invoice_id,
+    $selling_info['customer_id'],
+    $selling_info['paid_amount'],  // ✅ Ahora se obtiene de selling_price
+    $deleted_by,
+    $invoice_data
+));
 
         // Check invoice delete duration
         $selling_date_time = strtotime($selling_info['created_at']);
