@@ -30,7 +30,7 @@ function get_total_sell($from, $to) {
             FROM selling_item
             JOIN selling_info ON selling_item.invoice_id = selling_info.invoice_id
             WHERE selling_info.store_id = '$store_id'
-            AND selling_info.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'
+            
             AND (selling_item.item_quantity - selling_item.return_quantity) > 0";
 
   $statement = $db->prepare($query);
