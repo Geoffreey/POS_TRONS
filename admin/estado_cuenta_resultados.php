@@ -12,13 +12,8 @@ if (!is_loggedin()) {
 if (user_group_id() != 1 && !has_permission('access', 'read_profit_and_loss_report')) {
   redirect(root_url() . '/'.ADMINDIRNAME.'/dashboard.php');
 }
-$from = from();
-$to = to();
-
-if (!$from) {
-  $from = date('Y-m-d');
-  $to = date('Y-m-d');
-}
+$from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
+$to = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 
 // 🚀 Agregas SOLO ESTA función, porque get_total_sell() no existe aún:
 function get_total_sell($from, $to) {
@@ -30,8 +25,8 @@ function get_total_sell($from, $to) {
             FROM selling_item
             JOIN selling_info ON selling_item.invoice_id = selling_info.invoice_id
             WHERE selling_info.store_id = '$store_id'
-            
-            AND (selling_item.item_quantity - selling_item.return_quantity) > 0";
+              AND selling_info.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'
+              AND (selling_item.item_quantity - selling_item.return_quantity) > 0";
 
   $statement = $db->prepare($query);
   $statement->execute();
@@ -69,13 +64,6 @@ $document->setBodyClass('sidebar-collapse');
 // Agregar script
 $document->addScript('../assets/itsolution24/angular/controllers/ReportGastosController.js');
 $document->addScript('../assets/itsolution24/angular/controllers/ReportVentasController.js');
-
-$from = from();
-$to = to();
-if (!$from) {
-  $from = date('Y-m-d');
-  $to = date('Y-m-d');
-}
 
 // Incluir encabezado y pie de página
 include("header.php"); 
@@ -177,20 +165,33 @@ include ("left_sidebar.php") ;
         </div>
       </div>
     </div>
-
-
-    <?php
-    $from = from();
-    $to = to();
-    if (!$from) {
-      $from = date('Y-m-d');
-      $to = date('Y-m-d');
-    }
-    ?>
-    
+    <!--Filtro por fecha-->
+    <div class="box box-default">
+      <div class="box-header with-border">
+        <form method="get" action="">
+          <div class="row">
+            <div class="col-md-4">
+              <label>Desde:</label>
+              <input type="date" name="from" class="form-control" value="<?php echo isset($_GET['from']) ? $_GET['from'] : date('Y-m-01'); ?>" required>
+            </div>
+            <div class="col-md-4">
+              <label>Hasta:</label>
+              <input type="date" name="to" class="form-control" value="<?php echo isset($_GET['to']) ? $_GET['to'] : date('Y-m-d'); ?>" required>
+            </div>
+            <div class="col-md-4">
+              <label>&nbsp;</label><br>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa fa-filter"></i> Filtrar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  <!--tabla de resultados-->
     <div class="box box-default">
       <div class="box-header text-center">
-        <h4 class="title"><?php echo trans('title_profit');?>-<?php echo from() ? format_date($from) .' to '. format_date($to) : format_only_date($from);?></h4>
+        <h4 class="title"><?php echo trans('title_profit');?>-<?php echo format_date($from) . ' a ' . format_date($to); ?></h4>
       </div>
       <div class="xbox-body">
       <div class="row">
