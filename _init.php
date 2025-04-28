@@ -4,6 +4,21 @@ $timezone = 'America/Lima';
     |    Web: http://geoffdeep.pw, E-mail: info@geoffdeep.pw   | 
     |__________________________________________________________| 
 */
+// Establecer la ruta de cookie correcta para la sesión
+// Solo configurar si la sesión NO está iniciada
+if (session_status() == PHP_SESSION_NONE) {
+    $cookie_path = '/POS_TRONS'; // O ajusta según tu carpeta real
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => $cookie_path,
+        'domain' => $_SERVER['HTTP_HOST'],
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on',
+        'httponly' => true,
+        'samesite' => 'Strict'
+    ]);
+    session_start();
+}
+
 define("APPNAME", "Modern-POS"); 
 define("APPID", "26d9653505b49794718ac566f5f79a98"); 
 $timezone = "America/New_York"; 

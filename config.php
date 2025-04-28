@@ -3,9 +3,9 @@ define('INSTALLED', true);
 
 	$sql_details = array(
 'host' => 'localhost',
-'db' => 'posmoderno',
+'db' => 'systccbx_postrons',
 'user' => 'root',
-'pass' => 'Makoto@21',
+'pass' => '',
 'port' => '3306'
 	);
 
@@ -55,7 +55,7 @@ define('INSTALLED', true);
 	 *
 	  *Esto es útil cuando alojará la aplicación dentro de un subdirectorio de root
 	 */
-	define('SUBDIRECTORY', '');
+	define('SUBDIRECTORY', 'POS_TRONS');
 
 
 	/*
