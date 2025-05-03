@@ -4,7 +4,7 @@ session_start();
 include '../_init.php';
 
 // Comprobar si el usuario inició sesión o no
-// If user is not logged in then return an alert message
+// // Si el usuario no ha iniciado sesión, devuelve un mensaje de alerta
 if (!is_loggedin()) {
   header('HTTP/1.1 422 Unprocessable Entity');
   header('Content-Type: application/json; charset=UTF-8');
@@ -15,28 +15,28 @@ if (!is_loggedin()) {
 $store_id = store_id();
 $user_id = user_id();
 
-// LOAD INVOICE MODEL
+// LMODELO DE FACTURA DE CARGA
 $invoice_model = registry()->get('loader')->model('invoice');
 $return_model = registry()->get('loader')->model('sellreturn');
 
-// return product
+// devolver producto
 if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type'] == 'RETURN')
 {
   try {
 
-    // Check product return permission
+    // Verificar permiso de devolución del producto
     if (user_group_id() != 1 && !has_permission('access', 'create_sell_return')) {
       throw new Exception(trans('error_return_permission'));
     }
 
-    // Validate invoice id
+    // Validar la identificación de la factura
     if(empty($request->post['invoice-id'])) {
       throw new Exception(trans('error_invoice_id'));
     }
     $invoice_id = $request->post['invoice-id']; 
     $customer_id = $request->post['customer-id']; 
 
-    // Check, if invoice exist or not
+    // Validar la identificación de la factura
     $statement = db()->prepare("SELECT `selling_info`.*, `selling_price`.`subtotal`, `selling_price`.`order_tax`, `selling_price`.`payable_amount`, `selling_price`.`paid_amount`, `selling_price`.`due`, `selling_price`.`balance`, `selling_price`.`cgst`, `selling_price`.`sgst`, `selling_price`.`igst` FROM `selling_info` LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) WHERE `selling_info`.`invoice_id` = ?");
     $statement->execute(array($invoice_id));
     $invoice = $statement->fetch(PDO::FETCH_ASSOC);
@@ -52,7 +52,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     }
     $checked_item = 0;
     
-    // Validate quantity
+    // Validar cantidad
     foreach ($items as $item) 
     {
       if (!isset($item['check']) OR !$item['check']) {
@@ -288,7 +288,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
       $statement->execute(array($store_id, $customer_id));
     }
 
-    // Withdraw
+    // // Retirar
     if (($account_id = store('deposit_account_id')) && $return_amount > 0) 
     {
       $ref_no = unique_transaction_ref_no('withdraw');
@@ -341,7 +341,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
   }
 }
 
-// View Invoice
+// Ver factura
 if (isset($request->get['invoice_id']) && $request->get['action_type'] == 'VIEW') 
 {
     $invoice_id = $request->get['invoice_id'];
@@ -390,12 +390,13 @@ $columns = array(
 }
     ),
     array(
-        'db' => 'reference_no',
-        'dt' => 'reference_no',
-        'formatter' => function( $d, $row) {
-          return $row['reference_no'];           
-        }
-    ),
+      'db' => 'reference_no',
+      'dt' => 'reference_no',
+      'formatter' => function( $d, $row) {
+        return $row['reference_no'] . '<br><small><strong>Factura:</strong> ' . $row['invoice_id'] . '</small>';        
+      }
+  ),
+  
     array(
         'db' => 'invoice_id',
         'dt' => 'invoice_id',
