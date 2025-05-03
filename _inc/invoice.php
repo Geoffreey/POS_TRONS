@@ -74,30 +74,30 @@ $statement = db()->prepare("INSERT INTO deleted_invoices_log (invoice_id, custom
 $statement->execute(array(
     $invoice_id,
     $selling_info['customer_id'],
-    $selling_info['paid_amount'],  // ✅ Ahora se obtiene de selling_price
+    $selling_info['paid_amount'],  // 𺒝 Ahora se obtiene de selling_price
     $deleted_by,
     $invoice_data
 ));
 
-        // Check invoice delete duration
+        // Verificar la duraci髇 de eliminaci髇 de la factura
         $selling_date_time = strtotime($selling_info['created_at']);
         if (invoice_delete_lifespan() > $selling_date_time) {
           throw new Exception(trans('error_delete_duration_expired'));
         }
 
-        // Fetch selling invoice item
+        // Obtener el art韈ulo de factura de venta
         $statement = db()->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
         $selling_items = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        // Check, if invoice item exist or not
+        // Verificar si el art韈ulo de factura existe o no
         if (!$statement->rowCount()) {
             throw new Exception(trans('error_invoice_item'));
         }
 
         $Hooks->do_action('Before_Delete_Invoice', $request);
 
-        // Quantity adjustment start
+        // Inicio del ajuste de cantidad
         foreach ($selling_items as $item) {
             $item_id = $item['item_id'];
             $item_quantity = $item['item_quantity']-$item['return_quantity'];
@@ -109,27 +109,27 @@ $statement->execute(array(
         }
         // Quantity adjustment end
 
-        // Delete payments
+        // Eliminar pagos
         $statement = db()->prepare("DELETE FROM  `payments` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Delete returns
+        // Eliminar devoluciones
         $statement = db()->prepare("DELETE FROM  `returns` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Delete return items
+        // Eliminar elementos devueltos
         $statement = db()->prepare("DELETE FROM  `return_items` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Delete invoice info
+        // Eliminar informaci髇 de la factura
         $statement = db()->prepare("DELETE FROM  `selling_info` WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Delete invoice items
+        // Eliminar elementos de factura
         $statement = db()->prepare("DELETE FROM  `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Delete invoice price info
+        // Eliminar informaci髇 del precio de la factura
         $statement = db()->prepare("DELETE FROM  `selling_price` WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($store_id, $invoice_id));
 
@@ -138,7 +138,7 @@ $statement->execute(array(
             $statement->execute(array($store_id, $selling_info['customer_id']));
         }
 
-        // Substract bank transaction
+        // Restar transacci髇 bancaria
         $withdraw_amount = $selling_info['paid_amount'] - $selling_info['return_amount'];
         if (($account_id = store('deposit_account_id')) && $withdraw_amount > 0) {
           $ref_no = unique_transaction_ref_no('withdraw');
@@ -184,24 +184,24 @@ $statement->execute(array(
   }
 }
 
-// Update invoice info
+// Actualizar la informaci髇 de la factura
 if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type'] == 'UPDATEINVOICEINFO')
 {
     try {
         
-        // Check permission
+        // Verificar permiso
         if (user_group_id() != 1 && !has_permission('access', 'update_sell_invoice_info')) {
           throw new Exception(trans('error_update_permission'));
         }
 
-        // Validate invoice id
+        // Validar el id de la factura
         if (empty($request->post['invoice_id'])) {
             throw new Exception(trans('error_invoice_id'));
         }
 
         $invoice_id = $request->post['invoice_id'];
 
-        // Check, if invoice exist or not
+        // Verificar si existe factura o no
         $invoice_info = $invoice_model->getInvoiceInfo($invoice_id);
         if (!$invoice_info) {
             throw new Exception(trans('error_invoice_id'));
@@ -211,7 +211,7 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
             throw new Exception(trans('error_status'));
         }
 
-        // Check invoice edit duration
+        // Verificar la duraci髇 de la edici髇 de la factura
         $selling_date_time = strtotime($invoice_info['created_at']);
         if (invoice_edit_lifespan() > $selling_date_time) {
           throw new Exception(trans('error_edit_duration_expired'));
@@ -269,7 +269,7 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
         $statement = db()->prepare("UPDATE `selling_info` SET `payment_status` = ?, `checkout_status` = ? WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($payment_status, 1, $store_id, $invoice_id));
 
-        // Update invoice info
+        // Actualizar la informaci髇 de la factura
         $statement = db()->prepare("UPDATE `selling_info` SET `customer_mobile` = ?, `invoice_note` = ?, `status` = ? WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($customer_mobile, $invoice_note, $status, $store_id, $invoice_id));
 
@@ -288,7 +288,7 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
   }
 }
 
-// Invoice Info Edit Form
+// Formulario de edici髇 de informaci髇 de factura
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEINFOEDIT') 
 {
     try {
@@ -309,7 +309,7 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-// Invoice View
+// Vista de factura
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEVIEW') 
 {
     try {
@@ -335,19 +335,19 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-// Fetch Invoice
+// Obtener factura
 if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_id']))
 {
     try {
 
-        // Validate invoice id
+        // Validar el id de la factura
         $invoice_id = $request->get['invoice_id'];
         $invoice = $invoice_model->getInvoiceInfo($invoice_id);
         if (!$invoice) {
             throw new Exception(trans('error_invoice_id'));
         }        
 
-        // Fetch invoice info
+        // Obtener informaci髇 de la factura
         $statement = db()->prepare("SELECT selling_info.*, selling_price.*, customers.customer_name FROM `selling_info` 
             LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) 
             LEFT JOIN `customers` ON (`selling_info`.`customer_id` = `customers`.`customer_id`) 
@@ -365,7 +365,7 @@ if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_
             }
         }
         
-        // Fetch invoice item
+        // Obtener el art韈ulo de la factura
         $statement = db()->prepare("SELECT * FROM `selling_item` WHERE invoice_id = ?");
         $statement->execute(array($invoice_id));
         $selling_items = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -388,7 +388,7 @@ if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_
     }
 }
 
-// View invoice details
+// Ver detalles de la factura
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEDETAILS') {
 
     try {
@@ -419,7 +419,7 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-// View invoice due details
+/// Ver detalles de la factura vencida
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEDUEDETAILS') {
 
     try {
