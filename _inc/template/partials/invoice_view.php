@@ -1,5 +1,5 @@
 <style id="styles" type="text/css">
-<?php 
+<?php
 $template_id = get_preference('receipt_template') ? get_preference('receipt_template') : 1;
 echo html_entity_decode(get_the_postemplate($template_id,'template_css'));
 ?>

@@ -248,10 +248,20 @@ class ModelInvoice extends Model
                 $statement->execute(array($store_id, $product_id, 'active'));
                 $purchase_item = $statement->fetch(PDO::FETCH_ASSOC);
                 if (!$purchase_item) {
-                    $statement = $this->db->prepare("UPDATE `product_to_store` SET `quantity_in_stock` = ? WHERE `store_id` = ? AND `product_id` = ?");
-                    $statement->execute(array(0, $store_id, $product_id));
-                    throw new Exception('The product: '.$product_info['p_name'].' was out of stock, system has updated the product quantity as 0');
-                }
+             // Verificar si hay otras facturas con stock disponible antes de actualizar a 0
+                $statement = $this->db->prepare("SELECT SUM(item_quantity) as total_stock FROM purchase_item WHERE item_id = ? AND store_id = ?");
+                $statement->execute(array($product_id, $store_id));
+                $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+    if ($row['total_stock'] > 0) {
+        // Todavía hay stock en otras facturas, no actualizamos a 0
+    } else {
+        // No hay stock en ninguna factura, actualizamos a 0
+        $statement = $this->db->prepare("UPDATE `product_to_store` SET `quantity_in_stock` = ? WHERE `store_id` = ? AND `product_id` = ?");
+        $statement->execute(array(0, $store_id, $product_id));
+        throw new Exception('The product: '.$product_info['p_name'].' was out of stock, system has updated the product quantity as 0');
+    }
+}
                 $purchase_invoice_id = $purchase_item['invoice_id'];
                 $stock = $purchase_item['item_quantity'] - $purchase_item['total_sell'];
                 if (number_format($stock, 3, '.', '') < number_format($quantity_exist, 3, '.', '')) {
@@ -574,8 +584,9 @@ class ModelInvoice extends Model
     public function getInvoiceInfo($invoice_id, $store_id = null)
     {
         $store_id = $store_id ? $store_id : store_id();
-        $statement = $this->db->prepare("SELECT `selling_info`.*, `selling_price`.*, `customers`.`customer_id`, `customers`.`customer_name`, `customers`.`customer_mobile` AS `mobile_number`, `customers`.`customer_email` FROM `selling_info` LEFT JOIN `selling_price` ON `selling_info`.`invoice_id` = `selling_price`.`invoice_id` LEFT JOIN `customers` ON `selling_info`.`customer_id` = `customers`.`customer_id` WHERE `selling_info`.`store_id` = ? AND (`selling_info`.`invoice_id` = ? OR `selling_info`.`customer_id` = ?) AND `selling_info`.`inv_type` = 'sell' ORDER BY `selling_info`.`invoice_id` DESC");
-        $statement->execute(array($store_id, $invoice_id, $invoice_id));
+        $statement = $this->db->prepare("SELECT `selling_info`.*, `selling_price`.*, `customers`.`customer_id`, `customers`.`customer_name`, `customers`.`customer_mobile` AS `mobile_number`, `customers`.`customer_email` FROM `selling_info` LEFT JOIN `selling_price` ON `selling_info`.`invoice_id` = `selling_price`.`invoice_id` LEFT JOIN `customers` ON `selling_info`.`customer_id` = `customers`.`customer_id` WHERE  `selling_info`.`invoice_id` = ? AND `selling_info`.`inv_type` = 'sell' ORDER BY `selling_info`.`invoice_id` DESC");//OR `selling_info`.`customer_id` = ? `selling_info`.`store_id` = ? AND
+        //$statement->execute(array($store_id, $invoice_id, $invoice_id));
+        $statement->execute(array($invoice_id));
         $invoice = $statement->fetch(PDO::FETCH_ASSOC);
         if ($invoice) {
             $invoice['by'] = get_the_user($invoice['created_by'], 'username');
@@ -583,21 +594,34 @@ class ModelInvoice extends Model
         return $invoice;
     }
     
+    //Se modifica linea   $array[$i]['unitName'] = 'N/A'; // O cualquier valor por defecto por error al realizar pago
+    
     public function getInvoiceItems($invoice_id, $store_id = null)
-    {
-        $store_id = $store_id ? $store_id : store_id();
-        $statement = $this->db->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
-        $statement->execute(array($store_id, $invoice_id));
-        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
-        $array = array();
-        $i = 0;
-        foreach ($rows as $row) {
-            $array[$i] = $row;
-            $array[$i]['unitName'] = get_the_unit(get_the_product($row['item_id'])['unit_id'], 'unit_name');
-            $i++;
+{
+    $store_id = $store_id ? $store_id : store_id();
+    $statement = $this->db->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
+    $statement->execute(array($store_id, $invoice_id));
+    $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+    $array = array();
+    $i = 0;
+
+    foreach ($rows as $row) {
+        $array[$i] = $row;
+
+        // Obtener el producto
+        $product = get_the_product($row['item_id']);
+
+        // Verificar si `unit_id` existe en el producto
+        if ($product && isset($product['unit_id'])) {
+            $array[$i]['unitName'] = get_the_unit($product['unit_id'], 'unit_name');
+        } else {
+            $array[$i]['unitName'] = 'N/A'; // O cualquier valor por defecto
         }
-        return $array;
+        
+        $i++;
     }
+    return $array;
+}
     
     public function getInvoiceItemsHTML($invoice_id, $store_id = null)
     {

@@ -615,14 +615,6 @@
                 </a>
               </li>
             <?php endif; ?>
-            <?php if (user_group_id() == 1 || has_permission('access', 'estado_cuenta_resulta_resultados')): ?>
-              <li class="<?php echo current_nav() == 'estado_cuenta_resulta_resultados' ? ' active' : null; ?>">
-                <a href="estado_cuenta_resultados.php">
-                  <svg class="svg-icon"><use href="#icon-graph"></svg>
-                  <?php echo trans('estado_cuenta_resultados'); ?>
-                </a>
-              </li>
-            <?php endif; ?>
             <?php if (user_group_id() == 1 || has_permission('access', 'read_cashbook_report')): ?>
               <li class="<?php echo current_nav() == 'report_cashbook' ? ' active' : null; ?>">
                 <a href="report_cashbook.php">
