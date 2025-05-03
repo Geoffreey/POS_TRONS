@@ -255,8 +255,11 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     $statement->execute(array($due, $store_id, $invoice_id));
 
     $statement = db()->prepare("INSERT INTO `returns` SET `store_id` = ?, `reference_no` = ?, `invoice_id` = ?, `customer_id` = ?, `note` = ?, `total_item` = ?, `total_quantity` = ?, `subtotal` = ?, `total_amount` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `total_purchase_price` = ?, `profit` = ?, `created_by` = ?, `created_at` = ?");
-    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id,date('Y-m-d H:i:s',time())));
+    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id, date('Y-m-d H:i:s')));
 
+    //Nuevas lineas
+    $statement = db()->prepare("UPDATE `selling_info` SET `inv_type` = 'return' WHERE `store_id` = ? AND `invoice_id` = ?");
+    $statement->execute(array($store_id, $invoice_id));
     if ($return_amount > 0) {
       $is_profit = 0;
       $is_hide = 1;
@@ -264,8 +267,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
         $is_profit = 1;
         $is_hide = 0;
       }
-      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?,  `is_profit` = ?, `is_hide` = ?, `store_id` = ?, `invoice_id` = ?, `reference_no` = ?, `capital` = ?, `amount` = ?, `created_by` = ?");
-      $statement->execute(array('return', $is_profit, $is_hide, $store_id, $invoice_id, $reference_no, -$capital, -$return_amount, $user_id));
+      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?, `store_id` = ?, `invoice_id` = ?, `note` = ?, `pos_balance` = ?, `amount` = ?, `created_by` = ?");
+      $statement->execute(array('change', $store_id, $invoice_id, 'return_change', $balance, 0.00, $user_id));
 
       $statement = db()->prepare("UPDATE `selling_price` SET `return_amount` = `return_amount`+$return_amount WHERE `store_id` = ? AND `invoice_id` = ?");
       $statement->execute(array($store_id, $invoice_id));
@@ -383,8 +386,8 @@ $columns = array(
       'db' => 'created_at',   
       'dt' => 'created_at' ,
       'formatter' => function($d, $row) {
-        return $row['created_at'];
-      }
+    return date('d-m-Y h:i A', strtotime($row['created_at']));
+}
     ),
     array(
         'db' => 'reference_no',
