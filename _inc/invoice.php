@@ -465,7 +465,11 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
 $Hooks->do_action('Before_Showing_Invoice_List');
 
 $where_query = "selling_info.store_id = '$store_id'";
-$where_query .= " AND selling_info.inv_type = 'sell'";
+$where_query .= " AND EXISTS (
+    SELECT 1 FROM selling_item 
+    WHERE selling_item.invoice_id = selling_info.invoice_id 
+    AND (selling_item.item_quantity - selling_item.return_quantity) > 0
+)";
 if (isset($request->get['type']) && ($request->get['type'] != 'undefined') && $request->get['type'] != '') {
     switch ($request->get['type']) {
         case 'due':
@@ -511,7 +515,12 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 
 // tabla de base de datos a utilizar
 //(select sum((item_price*(item_quantity-return_quantity))-(((item_price*(item_quantity-return_quantity))*item_discount)/100)) from selling_item  where invoice_id=selling_info.invoice_id) as amount
-$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM selling_info WHERE {$where_query}) as selling_info";
+$table = "(SELECT selling_info.*, (
+  SELECT SUM((item_price * (item_quantity - return_quantity)) - 
+  ((item_price * (item_quantity - return_quantity)) * (item_discount/100)))
+  FROM selling_item 
+  WHERE invoice_id = selling_info.invoice_id
+) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM selling_info WHERE {$where_query}) as selling_info";
 
 // Llave principal de la tabla
 $primaryKey = 'info_id';
