@@ -31,7 +31,7 @@
         <?php echo trans('label_fecha_gasto'); ?><i class="required">*</i>
       </label>
       <div class="col-sm-6">
-        <input type="datetime-local" class="form-control" id="fecha_gasto" value="" name="fecha_gasto" autofocus autocomplete="off">
+        <input type="date" class="form-control" id="fecha_gasto" value="" name="fecha_gasto" autofocus autocomplete="off">
       </div>
     </div>
 

@@ -79,7 +79,9 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && isset($request->post['action
 
     $reference_no = $request->post['reference_no'] ? $ref_prefix . $request->post['reference_no'] : $ref_prefix . unique_id();
     $created_at = date_time();
-    $fecha_gasto = isset($request->post['fecha_gasto']) && $request->post['fecha_gasto'] != '' ? $request->post['fecha_gasto'] : date_time();
+    $fecha_gasto = isset($request->post['fecha_gasto']) && $request->post['fecha_gasto'] != ''
+    ? $request->post['fecha_gasto'] . ' 00:00:00'
+    : date_time();
     $category_id = $request->post['category_id'];
     $title = $request->post['title'];
     $attachment = $request->post['image'];

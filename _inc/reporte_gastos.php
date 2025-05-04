@@ -27,26 +27,28 @@ $where_query = "returnable='no' AND status=1";
 
 $from = from();
 $to = to();
-// If ($from) {
-//   $where_query .= date_range_expense_filter($from, $to);
-// }
+
 // tabla de base de datos a utilizar
-$table = "(SELECT * FROM expenses 
-  WHERE $where_query GROUP by category_id
-  ) as expenses";
+$table = "(SELECT category_id, MAX(fecha_gasto) as fecha_gasto, SUM(amount) as amount 
+  FROM expenses 
+  WHERE $where_query 
+  GROUP BY category_id
+) as expenses";
+
  
 // Llave principal de la tabla
-$primaryKey = 'id';
+$primaryKey = 'category_id';
+
 
 $columns = array(
   array(
-      'db' => 'id',
+      'db' => 'category_id',
       'dt' => 'DT_RowId',
       'formatter' => function( $d, $row ) {
           return 'row_'.$d;
       }
   ),
-  array( 'db' => 'id', 'dt' => 'serial_no' ),
+  array( 'db' => 'category_id', 'dt' => 'serial_no' ),
   array( 
     'db' => 'category_id',   
     'dt' => 'title',
@@ -61,6 +63,14 @@ $columns = array(
         return $parent . $category['category_name'];
     }
   ),
+  array( 
+    'db' => 'fecha_gasto',   
+    'dt' => 'fecha_gasto',
+    'formatter' => function($d, $row) {
+      return $d ? date('Y-m-d H:i', strtotime($d)) : '';
+    }
+  ),
+  
   array( 
     'db' => 'amount',   
     'dt' => 'this_month',

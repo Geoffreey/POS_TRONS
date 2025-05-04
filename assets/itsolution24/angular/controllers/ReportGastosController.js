@@ -51,7 +51,7 @@ function (
         ],
         "columnDefs": [
             {"visible": false,  "targets": hideColumsArray},
-            {"className": "text-right", "targets": [2, 3, 4]},
+            {"className": "text-right", "targets": [3, 4, 5]}, // nueva ubicación de valores monetarios
             {"className": "text-center", "targets": [0]},
             { 
                 "targets": [0],
@@ -83,10 +83,18 @@ function (
                    $(td).attr('data-title', $("#loss-loss-list thead tr th:eq(4)").html());
                 }
             },
+            { 
+                "targets": [5],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#loss-loss-list thead tr th:eq(2)").html());
+                }
+            },
+            
         ],
         "aoColumns": [
             {data : "serial_no"},
             {data : "title"},
+            {data : "fecha_gasto"},
             {data : "this_month"},
             {data : "this_year"},
             {data : "till_now"},

@@ -20,61 +20,17 @@ $user_id = user_id();
  */
 
 // Ahora hacemos el WHERE usando el store_id
-//$where_query = "selling_info.store_id = '$store_id'";
 $where_query = "si.store_id = '$store_id'";
-//$where_query = "si.store_id = '$store_id' AND si.is_delete = 0";
 
 // Si hay filtro de fecha
 $from = from();
 $to = to();
 if ($from && $to) {
-    //$where_query .= " AND selling_info.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
     $where_query .= " AND si.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
 }
 
 // Definimos la tabla, usando JOIN entre selling_price y selling_info
-//$table = "(SELECT 
-            //selling_price.price_id, 
-            //selling_price.invoice_id, 
-            //selling_info.created_at, 
-            //SUM(selling_price.payable_amount) AS amount
-          //FROM selling_price
-          //JOIN selling_info ON selling_price.invoice_id = selling_info.invoice_id
-          //WHERE $where_query
-          //GROUP BY selling_price.invoice_id) as selling_summary";
-
-          //$table = "(SELECT 
-          //sp.price_id, 
-          //sp.invoice_id, 
-          //si.created_at, 
-          //SUM(sp.payable_amount - IFNULL(ri.return_total, 0)) AS amount
-        //FROM selling_price sp
-        //JOIN selling_info si ON sp.invoice_id = si.invoice_id
-        //LEFT JOIN (
-            //SELECT invoice_id, SUM(item_quantity * item_price) AS return_total
-            //FROM return_items
-            //GROUP BY invoice_id
-        //) ri ON sp.invoice_id = ri.invoice_id
-        //LEFT JOIN (
-            //SELECT invoice_id, SUM(item_quantity) AS total_sold
-            //FROM selling_item
-            //GROUP BY invoice_id
-        //) si2 ON sp.invoice_id = si2.invoice_id
-        //LEFT JOIN (
-            //SELECT invoice_id, SUM(item_quantity) AS total_returned
-            //FROM return_items
-            //GROUP BY invoice_id
-        //) ri2 ON sp.invoice_id = ri2.invoice_id
-        //WHERE 
-            //$where_query
-            //AND (
-                //si.payment_status = 'paid' 
-                //OR (si2.total_sold > IFNULL(ri2.total_returned, 0))
-            //)
-        //GROUP BY sp.invoice_id
-      //) as selling_summary";
-
-      $table = "(SELECT 
+     $table = "(SELECT 
       sp.price_id, 
       sp.invoice_id, 
       si.created_at, 
