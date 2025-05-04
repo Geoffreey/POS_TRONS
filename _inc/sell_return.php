@@ -4,7 +4,7 @@ session_start();
 include '../_init.php';
 
 // Comprobar si el usuario inició sesión o no
-// // Si el usuario no ha iniciado sesión, devuelve un mensaje de alerta
+// If user is not logged in then return an alert message
 if (!is_loggedin()) {
   header('HTTP/1.1 422 Unprocessable Entity');
   header('Content-Type: application/json; charset=UTF-8');
@@ -15,28 +15,28 @@ if (!is_loggedin()) {
 $store_id = store_id();
 $user_id = user_id();
 
-// LMODELO DE FACTURA DE CARGA
+// LOAD INVOICE MODEL
 $invoice_model = registry()->get('loader')->model('invoice');
 $return_model = registry()->get('loader')->model('sellreturn');
 
-// devolver producto
+// return product
 if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type'] == 'RETURN')
 {
   try {
 
-    // Verificar permiso de devolución del producto
+    // Check product return permission
     if (user_group_id() != 1 && !has_permission('access', 'create_sell_return')) {
       throw new Exception(trans('error_return_permission'));
     }
 
-    // Validar la identificación de la factura
+    // Validate invoice id
     if(empty($request->post['invoice-id'])) {
       throw new Exception(trans('error_invoice_id'));
     }
     $invoice_id = $request->post['invoice-id']; 
     $customer_id = $request->post['customer-id']; 
 
-    // Validar la identificación de la factura
+    // Check, if invoice exist or not
     $statement = db()->prepare("SELECT `selling_info`.*, `selling_price`.`subtotal`, `selling_price`.`order_tax`, `selling_price`.`payable_amount`, `selling_price`.`paid_amount`, `selling_price`.`due`, `selling_price`.`balance`, `selling_price`.`cgst`, `selling_price`.`sgst`, `selling_price`.`igst` FROM `selling_info` LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) WHERE `selling_info`.`invoice_id` = ?");
     $statement->execute(array($invoice_id));
     $invoice = $statement->fetch(PDO::FETCH_ASSOC);
@@ -52,7 +52,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     }
     $checked_item = 0;
     
-    // Validar cantidad
+    // Validate quantity
     foreach ($items as $item) 
     {
       if (!isset($item['check']) OR !$item['check']) {
@@ -255,11 +255,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     $statement->execute(array($due, $store_id, $invoice_id));
 
     $statement = db()->prepare("INSERT INTO `returns` SET `store_id` = ?, `reference_no` = ?, `invoice_id` = ?, `customer_id` = ?, `note` = ?, `total_item` = ?, `total_quantity` = ?, `subtotal` = ?, `total_amount` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `total_purchase_price` = ?, `profit` = ?, `created_by` = ?, `created_at` = ?");
-    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id, date('Y-m-d H:i:s')));
+    $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id,date('Y-m-d H:i:s',time())));
 
-    //Nuevas lineas
-    $statement = db()->prepare("UPDATE `selling_info` SET `inv_type` = 'return' WHERE `store_id` = ? AND `invoice_id` = ?");
-    $statement->execute(array($store_id, $invoice_id));
     if ($return_amount > 0) {
       $is_profit = 0;
       $is_hide = 1;
@@ -267,8 +264,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
         $is_profit = 1;
         $is_hide = 0;
       }
-      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?, `store_id` = ?, `invoice_id` = ?, `note` = ?, `pos_balance` = ?, `amount` = ?, `created_by` = ?");
-      $statement->execute(array('change', $store_id, $invoice_id, 'return_change', $balance, 0.00, $user_id));
+      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?,  `is_profit` = ?, `is_hide` = ?, `store_id` = ?, `invoice_id` = ?, `reference_no` = ?, `capital` = ?, `amount` = ?, `created_by` = ?");
+      $statement->execute(array('return', $is_profit, $is_hide, $store_id, $invoice_id, $reference_no, -$capital, -$return_amount, $user_id));
 
       $statement = db()->prepare("UPDATE `selling_price` SET `return_amount` = `return_amount`+$return_amount WHERE `store_id` = ? AND `invoice_id` = ?");
       $statement->execute(array($store_id, $invoice_id));
@@ -288,7 +285,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
       $statement->execute(array($store_id, $customer_id));
     }
 
-    // // Retirar
+    // Withdraw
     if (($account_id = store('deposit_account_id')) && $return_amount > 0) 
     {
       $ref_no = unique_transaction_ref_no('withdraw');
@@ -341,7 +338,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
   }
 }
 
-// Ver factura
+// View Invoice
 if (isset($request->get['invoice_id']) && $request->get['action_type'] == 'VIEW') 
 {
     $invoice_id = $request->get['invoice_id'];
@@ -386,17 +383,16 @@ $columns = array(
       'db' => 'created_at',   
       'dt' => 'created_at' ,
       'formatter' => function($d, $row) {
-    return date('d-m-Y h:i A', strtotime($row['created_at']));
-}
+        return $row['created_at'];
+      }
     ),
     array(
-      'db' => 'reference_no',
-      'dt' => 'reference_no',
+        'db' => 'reference_no',
+        'dt' => 'reference_no',
       'formatter' => function( $d, $row) {
         return $row['reference_no'] . '<br><small><strong>Factura:</strong> ' . $row['invoice_id'] . '</small>';        
       }
   ),
-  
     array(
         'db' => 'invoice_id',
         'dt' => 'invoice_id',

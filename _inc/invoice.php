@@ -79,74 +79,74 @@ $statement->execute(array(
     $invoice_data
 ));
 
-        // Verificar la duración de eliminación de la factura
+        // Check invoice delete duration
         $selling_date_time = strtotime($selling_info['created_at']);
         if (invoice_delete_lifespan() > $selling_date_time) {
           throw new Exception(trans('error_delete_duration_expired'));
         }
 
-        // Obtener el artículo de factura de venta
-        $statement = db()->prepare("SELECT * FROM selling_item WHERE store_id = ? AND invoice_id = ?");
+        // Fetch selling invoice item
+        $statement = db()->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
         $selling_items = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        // Verificar si el artículo de factura existe o no
+        // Check, if invoice item exist or not
         if (!$statement->rowCount()) {
             throw new Exception(trans('error_invoice_item'));
         }
 
         $Hooks->do_action('Before_Delete_Invoice', $request);
 
-        // Inicio del ajuste de cantidad
+        // Quantity adjustment start
         foreach ($selling_items as $item) {
             $item_id = $item['item_id'];
             $item_quantity = $item['item_quantity']-$item['return_quantity'];
-            db()->prepare("UPDATE purchase_item SET status = ?, total_sell = total_sell - {$item_quantity} WHERE invoice_id = ? AND item_id = ?");
+            db()->prepare("UPDATE `purchase_item` SET `status` = ?, `total_sell` = `total_sell` - {$item_quantity} WHERE `invoice_id` = ? AND `item_id` = ?");
             db()->execute(array('active', $item['purchase_invoice_id'], $item_id));
 
-            db()->prepare("UPDATE product_to_store SET quantity_in_stock = quantity_in_stock + {$item_quantity} WHERE store_id = ? AND product_id = ?");
+            db()->prepare("UPDATE `product_to_store` SET `quantity_in_stock` = `quantity_in_stock` + {$item_quantity} WHERE `store_id` = ? AND `product_id` = ?");
             db()->execute(array($store_id, $item_id));
         }
         // Quantity adjustment end
 
-        // Eliminar pagos
-        $statement = db()->prepare("DELETE FROM  payments WHERE store_id = ? AND invoice_id = ?");
+        // Delete payments
+        $statement = db()->prepare("DELETE FROM  `payments` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Eliminar devoluciones
-        $statement = db()->prepare("DELETE FROM  returns WHERE store_id = ? AND invoice_id = ?");
+        // Delete returns
+        $statement = db()->prepare("DELETE FROM  `returns` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Eliminar elementos devueltos
-        $statement = db()->prepare("DELETE FROM  return_items WHERE store_id = ? AND invoice_id = ?");
+        // Delete return items
+        $statement = db()->prepare("DELETE FROM  `return_items` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Eliminar información de la factura
-        $statement = db()->prepare("DELETE FROM  selling_info WHERE store_id = ? AND invoice_id = ? LIMIT 1");
+        // Delete invoice info
+        $statement = db()->prepare("DELETE FROM  `selling_info` WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Eliminar elementos de factura
-        $statement = db()->prepare("DELETE FROM  selling_item WHERE store_id = ? AND invoice_id = ?");
+        // Delete invoice items
+        $statement = db()->prepare("DELETE FROM  `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
         $statement->execute(array($store_id, $invoice_id));
 
-        // Eliminar información del precio de la factura
-        $statement = db()->prepare("DELETE FROM  selling_price WHERE store_id = ? AND invoice_id = ? LIMIT 1");
+        // Delete invoice price info
+        $statement = db()->prepare("DELETE FROM  `selling_price` WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($store_id, $invoice_id));
 
         if ($due > 0) {
-            $statement = db()->prepare("UPDATE customer_to_store SET due = due-$due  WHERE store_id = ? AND customer_id = ?");
+            $statement = db()->prepare("UPDATE `customer_to_store` SET `due` = `due`-$due  WHERE `store_id` = ? AND `customer_id` = ?");
             $statement->execute(array($store_id, $selling_info['customer_id']));
         }
 
-        // Restar transacción bancaria
+        // Substract bank transaction
         $withdraw_amount = $selling_info['paid_amount'] - $selling_info['return_amount'];
         if (($account_id = store('deposit_account_id')) && $withdraw_amount > 0) {
           $ref_no = unique_transaction_ref_no('withdraw');
-          $statement = db()->prepare("SELECT category_id FROM expense_categorys WHERE sell_delete = ?");
+          $statement = db()->prepare("SELECT `category_id` FROM `expense_categorys` WHERE `sell_delete` = ?");
           $statement->execute(array(1));
           $category = $statement->fetch(PDO::FETCH_ASSOC);
           $exp_category_id = $category['category_id'];
-          $statement = db()->prepare("SELECT source_id FROM income_sources WHERE for_sell = ?");
+          $statement = db()->prepare("SELECT `source_id` FROM `income_sources` WHERE `for_sell` = ?");
           $statement->execute(array(1));
           $source = $statement->fetch(PDO::FETCH_ASSOC);
           $source_id = $source['source_id'];
@@ -155,17 +155,17 @@ $statement->execute(array(
           $image = 'NULL';
           $transaction_type = 'withdraw';
 
-          $statement = db()->prepare("INSERT INTO bank_transaction_info (store_id, is_substract, account_id, source_id, exp_category_id, ref_no, invoice_id, transaction_type, title, details, image, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+          $statement = db()->prepare("INSERT INTO `bank_transaction_info` (store_id, is_substract, account_id, source_id, exp_category_id, ref_no, invoice_id, transaction_type, title, details, image, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
           $statement->execute(array($store_id, 1, $account_id, $source_id, $exp_category_id, $ref_no, $invoice_id, $transaction_type, $title, $details, $image, $user_id, date_time()));
 		  $info_id = db()->lastInsertId();
 
-          $statement = db()->prepare("INSERT INTO bank_transaction_price (store_id, info_id, ref_no, amount) VALUES (?, ?, ?, ?)");
+          $statement = db()->prepare("INSERT INTO `bank_transaction_price` (store_id, info_id, ref_no, amount) VALUES (?, ?, ?, ?)");
           $statement->execute(array($store_id, $info_id, $ref_no, $withdraw_amount));
 
-          $statement = db()->prepare("UPDATE bank_account_to_store SET withdraw = withdraw + $withdraw_amount WHERE store_id = ? AND account_id = ?");
+          $statement = db()->prepare("UPDATE `bank_account_to_store` SET `withdraw` = `withdraw` + $withdraw_amount WHERE `store_id` = ? AND `account_id` = ?");
           $statement->execute(array($store_id, $account_id));
 
-          $statement = db()->prepare("UPDATE bank_accounts SET total_deposit = total_deposit + $withdraw_amount WHERE id = ?");
+          $statement = db()->prepare("UPDATE `bank_accounts` SET `total_deposit` = `total_deposit` + $withdraw_amount WHERE `id` = ?");
           $statement->execute(array($account_id));
         }
 
@@ -184,24 +184,24 @@ $statement->execute(array(
   }
 }
 
-// Actualizar la información de la factura
+// Update invoice info
 if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type'] == 'UPDATEINVOICEINFO')
 {
     try {
         
-        // Verificar permiso
+        // Check permission
         if (user_group_id() != 1 && !has_permission('access', 'update_sell_invoice_info')) {
           throw new Exception(trans('error_update_permission'));
         }
 
-        // Validar el id de la factura
+        // Validate invoice id
         if (empty($request->post['invoice_id'])) {
             throw new Exception(trans('error_invoice_id'));
         }
 
         $invoice_id = $request->post['invoice_id'];
 
-        // Verificar si existe factura o no
+        // Check, if invoice exist or not
         $invoice_info = $invoice_model->getInvoiceInfo($invoice_id);
         if (!$invoice_info) {
             throw new Exception(trans('error_invoice_id'));
@@ -211,7 +211,7 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
             throw new Exception(trans('error_status'));
         }
 
-        // Verificar la duración de la edición de la factura
+        // Check invoice edit duration
         $selling_date_time = strtotime($invoice_info['created_at']);
         if (invoice_edit_lifespan() > $selling_date_time) {
           throw new Exception(trans('error_edit_duration_expired'));
@@ -243,19 +243,14 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
 
         if ($balance > 0) {
             $paid_amount = $paid_amount - $balance;
-            $pos_balance = isset($balance) && is_numeric($balance) ? $balance : 0.00;
-            $amount = 0.00;
-
-            $statement = db()->prepare("INSERT INTO `payments` 
-            SET `type` = ?, `store_id` = ?, `invoice_id` = ?, `note` = ?, `pos_balance` = ?, `amount` = ?, `created_by` = ?");
-            $statement->execute(array('change', $store_id, $invoice_id, 'return_change', $pos_balance, $amount, $user_id));
-
+            $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?, `store_id` = ?, `invoice_id` = ?, `pos_balance` = ?, `created_by` = ?");
+            $statement->execute(array('change', $store_id, $invoice_id, $balance, $user_id));
         } else {
-            $statement = db()->prepare("DELETE FROM payments WHERE store_id = ? AND invoice_id = ? AND type = ?");
+            $statement = db()->prepare("DELETE FROM `payments` WHERE `store_id` = ? AND `invoice_id` = ? AND `type` = ?");
             $statement->execute(array($store_id, $invoice_id, 'change'));
         }
 
-        $statement = db()->prepare("UPDATE selling_price SET discount_amount = ?, payable_amount = ?, paid_amount = ?, due_paid = ?, due = ? WHERE store_id = ? AND invoice_id = ? LIMIT 1");
+        $statement = db()->prepare("UPDATE `selling_price` SET `discount_amount` = ?, `payable_amount` = ?, `paid_amount` = ?, `due_paid` = ?, `due` = ? WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($discount_amount, $payable_amount, $paid_amount, $due_paid, $due, $store_id, $invoice_id));
 
         if ($due > 0) {
@@ -264,18 +259,18 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
             $payment_status = 'paid';
         }
 
-        $statement = db()->prepare("DELETE FROM payments WHERE store_id = ? AND invoice_id = ? AND type = ? AND note = ?");
+        $statement = db()->prepare("DELETE FROM `payments` WHERE `store_id` = ? AND `invoice_id` = ? AND `type` = ? AND `note` = ?");
         $statement->execute(array($store_id, $invoice_id, 'discount', 'discount_while_invoice_edit'));
         if ($discount_amount > 0) {
-            $statement = db()->prepare("INSERT INTO payments (type, store_id, invoice_id, amount, note, total_paid, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $statement = db()->prepare("INSERT INTO `payments` (type, store_id, invoice_id, amount, note, total_paid, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $statement->execute(array('discount', $store_id, $invoice_id, $discount_amount, 'discount_while_invoice_edit', $discount_amount, $user_id, date_time()));
         }
 
-        $statement = db()->prepare("UPDATE selling_info SET payment_status = ?, checkout_status = ? WHERE store_id = ? AND invoice_id = ? LIMIT 1");
+        $statement = db()->prepare("UPDATE `selling_info` SET `payment_status` = ?, `checkout_status` = ? WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($payment_status, 1, $store_id, $invoice_id));
 
-        // Actualizar la información de la factura
-        $statement = db()->prepare("UPDATE selling_info SET customer_mobile = ?, invoice_note = ?, status = ? WHERE store_id = ? AND invoice_id = ? LIMIT 1");
+        // Update invoice info
+        $statement = db()->prepare("UPDATE `selling_info` SET `customer_mobile` = ?, `invoice_note` = ?, `status` = ? WHERE `store_id` = ? AND `invoice_id` = ? LIMIT 1");
         $statement->execute(array($customer_mobile, $invoice_note, $status, $store_id, $invoice_id));
 
         $Hooks->do_action('After_Update_Invoice_Info', $invoice_id);
@@ -293,7 +288,7 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
   }
 }
 
-// Formulario de edición de información de factura
+// Invoice Info Edit Form
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEINFOEDIT') 
 {
     try {
@@ -314,7 +309,7 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-// Vista de factura
+// Invoice View
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEVIEW') 
 {
     try {
@@ -340,23 +335,23 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-// Obtener factura
+// Fetch Invoice
 if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_id']))
 {
     try {
 
-        // Validar el id de la factura
+        // Validate invoice id
         $invoice_id = $request->get['invoice_id'];
         $invoice = $invoice_model->getInvoiceInfo($invoice_id);
         if (!$invoice) {
             throw new Exception(trans('error_invoice_id'));
         }        
 
-        // Obtener información de la factura
-        $statement = db()->prepare("SELECT selling_info.*, selling_price.*, customers.customer_name FROM selling_info 
-            LEFT JOIN selling_price ON (selling_info.invoice_id = selling_price.invoice_id) 
-            LEFT JOIN customers ON (selling_info.customer_id = customers.customer_id) 
-            WHERE selling_info.invoice_id = ?");
+        // Fetch invoice info
+        $statement = db()->prepare("SELECT selling_info.*, selling_price.*, customers.customer_name FROM `selling_info` 
+            LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) 
+            LEFT JOIN `customers` ON (`selling_info`.`customer_id` = `customers`.`customer_id`) 
+            WHERE `selling_info`.`invoice_id` = ?");
         $statement->execute(array($invoice_id));
         $invoice = $statement->fetch(PDO::FETCH_ASSOC);
         if (empty($invoice)) {
@@ -370,8 +365,8 @@ if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_
             }
         }
         
-        // Obtener el artículo de la factura
-        $statement = db()->prepare("SELECT * FROM selling_item WHERE invoice_id = ?");
+        // Fetch invoice item
+        $statement = db()->prepare("SELECT * FROM `selling_item` WHERE invoice_id = ?");
         $statement->execute(array($invoice_id));
         $selling_items = $statement->fetchAll(PDO::FETCH_ASSOC);
         if (empty($selling_items)) {
@@ -393,18 +388,18 @@ if ($request->server['REQUEST_METHOD'] == 'GET' && isset($request->get['invoice_
     }
 }
 
-// Ver detalles de la factura
+// View invoice details
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEDETAILS') {
 
     try {
 
         $user_id = isset($request->get['user_id']) ? $request->get['user_id'] : null;
-        $where_query = "selling_info.inv_type = 'sell' AND created_by = ? AND status = ?";
+        $where_query = "`selling_info`.`inv_type` = 'sell' AND `created_by` = ? AND `status` = ?";
         $from = from() ? from() : date('Y-m-d');
         $to = to() ? to() : date('Y-m-d');
         $where_query .= date_range_filter($from, $to);
-        $statement = db()->prepare("SELECT * FROM selling_info 
-            LEFT JOIN selling_price ON (selling_info.invoice_id = selling_price.invoice_id)
+        $statement = db()->prepare("SELECT * FROM `selling_info` 
+            LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`)
             WHERE $where_query");
         $statement->execute(array($user_id, 1));
         $invoices = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -424,19 +419,19 @@ if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INV
     }
 }
 
-/// Ver detalles de la factura vencida
+// View invoice due details
 if (isset($request->get['action_type']) AND $request->get['action_type'] == 'INVOICEDUEDETAILS') {
 
     try {
 
         $user_id = isset($request->get['user_id']) ? $request->get['user_id'] : null;
-        $where_query = "selling_info.inv_type = 'sell' AND created_by = ? AND status = ? AND selling_price.due > 0";
+        $where_query = "`selling_info`.`inv_type` = 'sell' AND `created_by` = ? AND `status` = ? AND `selling_price`.`due` > 0";
         $from = from() ? from() : date('Y-m-d');
         $to = to() ? to() : date('Y-m-d');
         $where_query .= date_range_filter($from, $to);
 
-        $statement = db()->prepare("SELECT * FROM selling_info 
-            LEFT JOIN selling_price ON (selling_info.invoice_id = selling_price.invoice_id)
+        $statement = db()->prepare("SELECT * FROM `selling_info` 
+            LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`)
             WHERE $where_query");
         $statement->execute(array($user_id, 1));
         $invoices = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -515,12 +510,7 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 
 // tabla de base de datos a utilizar
 //(select sum((item_price*(item_quantity-return_quantity))-(((item_price*(item_quantity-return_quantity))*item_discount)/100)) from selling_item  where invoice_id=selling_info.invoice_id) as amount
-$table = "(SELECT selling_info.*, (
-  SELECT SUM((item_price * (item_quantity - return_quantity)) - 
-  ((item_price * (item_quantity - return_quantity)) * (item_discount/100)))
-  FROM selling_item 
-  WHERE invoice_id = selling_info.invoice_id
-) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM selling_info WHERE {$where_query}) as selling_info";
+$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
 
 // Llave principal de la tabla
 $primaryKey = 'info_id';
