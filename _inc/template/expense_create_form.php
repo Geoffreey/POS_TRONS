@@ -27,6 +27,15 @@
     </div>
 
     <div class="form-group">
+      <label for="fecha_gasto" class="col-sm-3 control-label">
+        <?php echo trans('label_fecha_gasto'); ?><i class="required">*</i>
+      </label>
+      <div class="col-sm-6">
+        <input type="datetime-local" class="form-control" id="fecha_gasto" value="" name="fecha_gasto" autofocus autocomplete="off">
+      </div>
+    </div>
+
+    <div class="form-group">
       <label for="category_id" class="col-sm-3 control-label">
         <?php echo trans('label_category'); ?><i class="required">*</i>
       </label>

@@ -56,10 +56,10 @@ function (
             [10, 25, 50, 100, 200, "All"]
         ],
         "columnDefs": [
-            {"targets": [5, 6, 7], "orderable": false},
+            {"targets": [6, 7, 8], "orderable": false},
             {"visible": false,  "targets": hideColumsArray},
             {"className": "text-right", "targets": [3]},
-            {"className": "text-center", "targets": [0, 2, 4, 5 ,6, 7]},
+            {"className": "text-center", "targets": [0, 2, 4, 5 ,6, 7, 8]},
             { 
                 "targets": [0],
                 'createdCell':  function (td, cellData, rowData, row, col) {
@@ -87,23 +87,29 @@ function (
             { 
                 "targets": [4],
                 'createdCell':  function (td, cellData, rowData, row, col) {
-                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(4)").html());
+                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(3)").html());
                 }
             },
             { 
                 "targets": [5],
                 'createdCell':  function (td, cellData, rowData, row, col) {
-                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(5)").html());
+                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(4)").html());
                 }
             },
             { 
                 "targets": [6],
                 'createdCell':  function (td, cellData, rowData, row, col) {
-                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(6)").html());
+                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(5)").html());
                 }
             },
             { 
                 "targets": [7],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(6)").html());
+                }
+            },
+            { 
+                "targets": [8],
                 'createdCell':  function (td, cellData, rowData, row, col) {
                    $(td).attr('data-title', $("#expense-expense-list thead tr th:eq(7)").html());
                 }
@@ -114,6 +120,7 @@ function (
             {data : "title"},
             {data : "category_name"},
             {data : "amount"},
+            {data : "fecha_gasto"},
             {data : "created_at"},
             {data : "btn_view"},
             {data : "btn_edit"},
@@ -163,7 +170,7 @@ function (
                         .css( 'font-size', 'inherit' );
                 },
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4 ]
+                    columns: [ 0, 1, 2, 3, 4, 5 ]
                 }
             },
             {
@@ -172,7 +179,7 @@ function (
                 titleAttr: "Copy",
                 title: window.store.name + " > Expense Listing-"+from+" to "+to,
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4 ]
+                    columns: [ 0, 1, 2, 3, 4, 5 ]
                 }
             },
             {
@@ -181,7 +188,7 @@ function (
                 titleAttr: "Excel",
                 title: window.store.name + " > Expense Listing",
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4 ]
+                    columns: [ 0, 1, 2, 3, 4, 5 ]
                 }
             },
             {
@@ -190,7 +197,7 @@ function (
                 titleAttr: "CSV",
                 title: window.store.name + " > Expense Listing-"+from+" to "+to,
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4 ]
+                    columns: [ 0, 1, 2, 3, 4, 5 ]
                 }
             },
             {
@@ -200,7 +207,7 @@ function (
                 download: "open",
                 title: window.store.name + " > Expense Listing-"+from+" to "+to,
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4 ]
+                    columns: [ 0, 1, 2, 3, 4, 5 ]
                 },
                 customize: function (doc) {
                     doc.content[1].table.widths =  Array(doc.content[1].table.body[0].length + 1).join('*').split('');

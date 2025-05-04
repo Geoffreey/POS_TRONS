@@ -133,6 +133,9 @@ include ("left_sidebar.php") ;
                       <?php echo trans('label_amount'); ?>
                     </th>
                     <th class="w-25">
+                      <?php echo trans('label_fecha_gasto'); ?>
+                    </th>
+                    <th class="w-25">
                       <?php echo trans('label_created_at'); ?>
                     </th>
                     <th class="w-5">
@@ -159,6 +162,9 @@ include ("left_sidebar.php") ;
                     </th>
                     <th class="w-10">
                       <?php echo trans('label_amount'); ?>
+                    </th>
+                    <th class="w-25">
+                      <?php echo trans('label_fecha_gasto'); ?>
                     </th>
                     <th class="w-25">
                       <?php echo trans('label_created_at'); ?>

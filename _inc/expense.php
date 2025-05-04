@@ -79,12 +79,14 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && isset($request->post['action
 
     $reference_no = $request->post['reference_no'] ? $ref_prefix . $request->post['reference_no'] : $ref_prefix . unique_id();
     $created_at = date_time();
+    $fecha_gasto = isset($request->post['fecha_gasto']) && $request->post['fecha_gasto'] != '' ? $request->post['fecha_gasto'] : date_time();
     $category_id = $request->post['category_id'];
     $title = $request->post['title'];
     $attachment = $request->post['image'];
     $amount = $request->post['amount'];
     $returnable = $request->post['returnable'];
     $note = $request->post['note'];
+    
 
     // Check for dublicate
     $statement = db()->prepare("SELECT * FROM `expenses` WHERE `reference_no` = ?");
@@ -95,8 +97,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && isset($request->post['action
     }
 
     // Insert into purchase info
-    $statement = db()->prepare("INSERT INTO `expenses` (store_id, reference_no, category_id, title, amount, returnable, note, attachment, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $statement->execute(array($store_id, $reference_no, $category_id, $title, $amount, $returnable, $note, $attachment, $user_id, $created_at));
+    $statement = db()->prepare("INSERT INTO `expenses` (store_id, reference_no, category_id, title, amount, returnable, note, attachment, created_by, created_at, fecha_gasto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $statement->execute(array($store_id, $reference_no, $category_id, $title, $amount, $returnable, $note, $attachment, $user_id, $created_at, $fecha_gasto));
     $id = db()->lastInsertId();
 
     // Withdraw
@@ -465,6 +467,15 @@ $columns = array(
         return $row['created_at'];
     }
   ),
+
+  array( 
+    'db' => 'fecha_gasto',   
+    'dt' => 'fecha_gasto',
+    'formatter' => function($d, $row) {
+      return $row['fecha_gasto'];
+    }
+  ),
+  
   array(
     'db'        => 'id',
     'dt'        => 'btn_view',
