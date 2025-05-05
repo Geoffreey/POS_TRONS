@@ -4,8 +4,6 @@ session_start();
 include ("../_init.php");
 include ("../const.php");
 
-// Comprobar si el usuario inició sesión o no
-// If user is not logged in then return an alert message
 if (!is_loggedin()) {
   header('HTTP/1.1 422 Unprocessable Entity');
   header('Content-Type: application/json; charset=UTF-8');
@@ -28,10 +26,13 @@ $user_id = user_id();
 // LOAD INVOICE MODEL
 $invoice_model = registry()->get('loader')->model('invoice');
 
+
 // Delete invoice
 if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type'] == 'DELETE')
 {
     try {
+
+        error_log("Intentando eliminar invoice: " . $request->post['invoice_id']);
         
         // Check permission
         if (user_group_id() != 1 && !has_permission('access', 'delete_sell_invoice')) {
@@ -170,18 +171,19 @@ $statement->execute(array(
         }
 
         $Hooks->do_action('After_Delete_Invoice', $request);
-
+        // ? RESPUESTA JSON CORRECTA
+        ob_clean();
+        flush();
         header('Content-Type: application/json');
         echo json_encode(array('msg' => trans('text_delete_success')));
         exit();
 
-    } catch(Exception $e) { 
-
-        header('HTTP/1.1 422 Unprocessable Entity');
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode(array('errorMsg' => $e->getMessage()));
-        exit();
-  }
+} catch(Exception $e) { 
+    header('HTTP/1.1 422 Unprocessable Entity');
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(array('errorMsg' => $e->getMessage()));
+    exit();
+}
 }
 
 // Update invoice info

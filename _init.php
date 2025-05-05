@@ -1,11 +1,4 @@
 <?php
-/*   __________________________________________________________
-$timezone = 'America/Lima'; 
-    |    Web: http://geoffdeep.pw, E-mail: info@geoffdeep.pw   | 
-    |__________________________________________________________| 
-*/
-// Establecer la ruta de cookie correcta para la sesión
-// Solo configurar si la sesión NO está iniciada
 if (session_status() == PHP_SESSION_NONE) {
     $cookie_path = '/POS_TRONS'; // O ajusta según tu carpeta real
     session_set_cookie_params([
