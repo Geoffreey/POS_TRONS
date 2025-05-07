@@ -20,6 +20,7 @@ const Social = [
 const EstadoEnvio = [
     '0' => 'No Entregado',
     '1' =>'En Ruta',
-    '2' => 'Entregado'
+    '2' => 'Entregado',
+    '3' => 'Pagado'
 ];
 ?>
