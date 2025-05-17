@@ -75,7 +75,7 @@ $statement = db()->prepare("INSERT INTO deleted_invoices_log (invoice_id, custom
 $statement->execute(array(
     $invoice_id,
     $selling_info['customer_id'],
-    $selling_info['paid_amount'],  // 𺒝 Ahora se obtiene de selling_price
+    $selling_info['paid_amount'],  //Ahora se obtiene de selling_price
     $deleted_by,
     $invoice_data
 ));
@@ -512,8 +512,23 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 
 // tabla de base de datos a utilizar
 //(select sum((item_price*(item_quantity-return_quantity))-(((item_price*(item_quantity-return_quantity))*item_discount)/100)) from selling_item  where invoice_id=selling_info.invoice_id) as amount
-$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
-
+//$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
+$table = "(SELECT selling_info.*, 
+  (
+    (SELECT 
+      SUM((item_price * (item_quantity - return_quantity)) 
+        - ((item_price * (item_quantity - return_quantity)) * item_discount / 100) 
+        + item_tax)
+     FROM selling_item
+     WHERE invoice_id = selling_info.invoice_id)
+    +
+    (SELECT shipping_amount 
+     FROM selling_price 
+     WHERE invoice_id = selling_info.invoice_id)
+  ) AS amount,
+  (SELECT name FROM pmethods WHERE pmethod_id = selling_info.pmethod_id) AS pmethod 
+  FROM `selling_info` 
+  WHERE {$where_query}) AS selling_info";
 // Llave principal de la tabla
 $primaryKey = 'info_id';
 

@@ -39,6 +39,8 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     // Check, if invoice exist or not
     $statement = db()->prepare("SELECT `selling_info`.*, `selling_price`.`subtotal`, `selling_price`.`order_tax`, `selling_price`.`payable_amount`, `selling_price`.`paid_amount`, `selling_price`.`due`, `selling_price`.`balance`, `selling_price`.`cgst`, `selling_price`.`sgst`, `selling_price`.`igst` FROM `selling_info` LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) WHERE `selling_info`.`invoice_id` = ?");
     $statement->execute(array($invoice_id));
+    
+    
     $invoice = $statement->fetch(PDO::FETCH_ASSOC);
     if (!$invoice) {
       throw new Exception(trans('error_invoice_not_found'));
@@ -269,6 +271,24 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
 
       $statement = db()->prepare("UPDATE `selling_price` SET `return_amount` = `return_amount`+$return_amount WHERE `store_id` = ? AND `invoice_id` = ?");
       $statement->execute(array($store_id, $invoice_id));
+
+      // Recalcular el total neto después de la devolución (ajusta el payable_amount)
+      $statement = db()->prepare("
+      UPDATE selling_price 
+      SET payable_amount = (
+      SELECT 
+      SUM((item_price * (item_quantity - return_quantity)) 
+         - ((item_price * (item_quantity - return_quantity)) * item_discount / 100)
+         + item_tax
+      )
+      FROM selling_item
+      WHERE invoice_id = ?
+      ) + shipping_amount
+      WHERE invoice_id = ?  
+    ");
+$statement->execute([$invoice_id, $invoice_id]);
+
+
     }
 
     if ($balance > 0) {
