@@ -288,7 +288,6 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     ");
 $statement->execute([$invoice_id, $invoice_id]);
 
-
     }
 
     if ($balance > 0) {
