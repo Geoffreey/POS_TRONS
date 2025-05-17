@@ -15,89 +15,79 @@ if (user_group_id() != 1 && !has_permission('access', 'read_profit_and_loss_repo
 $from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
 $to = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 
+// FUNCIONES ACTUALIZADAS
 function get_total_precio_venta($from, $to) {
   global $db;
   $store_id = store_id();
-  $query = "SELECT 
-              SUM(selling_item.item_price * (selling_item.item_quantity - selling_item.return_quantity)) AS total_precio_venta
-            FROM selling_item
-            JOIN selling_info ON selling_item.invoice_id = selling_info.invoice_id
-            WHERE selling_info.store_id = '$store_id'
-              AND selling_info.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
-  $statement = $db->prepare($query);
-  $statement->execute();
-  $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+  $query = "
+    SELECT SUM(si.item_price * (si.item_quantity - si.return_quantity)) AS total_precio_venta
+    FROM selling_item si
+    JOIN selling_info s ON si.invoice_id = s.invoice_id
+    WHERE s.store_id = :store_id
+      AND s.created_at BETWEEN :from AND :to
+      AND s.status = 1
+      AND s.payment_status = 'paid'
+  ";
+  $stmt = $db->prepare($query);
+  $stmt->execute([
+    ':store_id' => $store_id,
+    ':from' => $from . ' 00:00:00',
+    ':to' => $to . ' 23:59:59'
+  ]);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_precio_venta']) ? $row['total_precio_venta'] : 0;
 }
 
 function get_total_precio_compra($from, $to) {
   global $db;
   $store_id = store_id();
+
   $query = "
-    SELECT 
-      SUM((si.item_purchase_price) * (si.item_quantity - si.return_quantity)) AS total_precio_compra
+    SELECT SUM(si.item_purchase_price * (si.item_quantity - si.return_quantity)) AS total_precio_compra
     FROM selling_item si
     JOIN selling_info s ON si.invoice_id = s.invoice_id
     WHERE s.store_id = :store_id
       AND s.created_at BETWEEN :from AND :to
-      AND (si.item_quantity - si.return_quantity) > 0
       AND s.status = 1
       AND s.payment_status = 'paid'
   ";
-  $statement = $db->prepare($query);
-  $statement->execute([
+  $stmt = $db->prepare($query);
+  $stmt->execute([
     ':store_id' => $store_id,
     ':from' => $from . ' 00:00:00',
     ':to' => $to . ' 23:59:59'
   ]);
-  $row = $statement->fetch(PDO::FETCH_ASSOC);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_precio_compra']) ? $row['total_precio_compra'] : 0;
-}
-
-
-// 🚀 Agregas SOLO ESTA función, porque get_total_sell() no existe aún:
-function get_total_sell($from, $to) {
-  global $db;
-  $store_id = store_id();
-
-  $query = "SELECT 
-              SUM((selling_item.item_price - selling_item.item_purchase_price) * 
-                  (selling_item.item_quantity - selling_item.return_quantity)) AS utilidad_total
-            FROM selling_item
-            JOIN selling_info ON selling_item.invoice_id = selling_info.invoice_id
-            WHERE selling_info.store_id = '$store_id'
-              AND selling_info.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
-
-  $statement = $db->prepare($query);
-  $statement->execute();
-  $row = $statement->fetch(PDO::FETCH_ASSOC);
-
-  return $row && isset($row['utilidad_total']) ? $row['utilidad_total'] : 0;
 }
 
 function get_total_gastos($from, $to) {
   global $db;
   $store_id = store_id();
 
-  $query = "SELECT 
-              SUM(amount) AS total_gastos
-            FROM expenses
-            WHERE store_id = '$store_id'
-              AND created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
-
-  $statement = $db->prepare($query);
-  $statement->execute();
-  $row = $statement->fetch(PDO::FETCH_ASSOC);
-
+  $query = "
+    SELECT SUM(amount) AS total_gastos
+    FROM expenses
+    WHERE store_id = :store_id
+      AND created_at BETWEEN :from AND :to
+  ";
+  $stmt = $db->prepare($query);
+  $stmt->execute([
+    ':store_id' => $store_id,
+    ':from' => $from . ' 00:00:00',
+    ':to' => $to . ' 23:59:59'
+  ]);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_gastos']) ? $row['total_gastos'] : 0;
 }
 
-// 🚀 Ahora calculas todo:
+// CALCULOS
 $total_precio_venta = get_total_precio_venta($from, $to);
 $total_precio_compra = get_total_precio_compra($from, $to);
-$total_venta = get_total_sell($from, $to);
+$utilidad_bruta = $total_precio_venta - $total_precio_compra;
 $total_gasto = get_total_gastos($from, $to);
-$utilidad_bruta = $total_venta - $total_gasto;
+$utilidad_neta = $utilidad_bruta - $total_gasto;
 
 // Establecer título del documento
 $document->setTitle(trans('title_profit_and_loss'));
@@ -230,48 +220,49 @@ include ("left_sidebar.php") ;
         </form>
       </div>
     </div>
-  <!--tabla de resultados-->
+    <!--tabla de resultados-->
     <div class="box box-default">
       <div class="box-header text-center">
-        <h4 class="title"><?php echo trans('title_profit');?>-<?php echo format_date($from) . ' a ' . format_date($to); ?></h4>
+        <h4 class="title">
+          <?php echo trans('title_profit'); ?> - 
+          <?php echo format_date($from) . ' a ' . format_date($to); ?>
+        </h4>
       </div>
-      <div class="xbox-body">
-      <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped mt-0">
-              <tbody>
-              <tr>
-                <td class="w-50 bg-gray text-right bg-yellow">Costo Total de Venta</td>
-                <td class="w-50 text-left bg-warning"><?php echo currency_format($total_precio_venta); ?></td>
-              </tr>
-              <tr>
-                <td class="w-50 bg-gray text-right bg-orange">Costo Total de Compra</td>
-                <td class="w-50 text-left bg-warning"><?php echo currency_format($total_precio_compra); ?></td>
-              </tr>
-                <tr>
-                  <td class="w-50 bg-gray text-right bg-green"><?php echo trans('utilidad_bruta'); ?></td>
-                  <td class="w-50 text-left bg-success"><?php echo currency_format($total_venta); ?></td>
-                </tr>
-                <tr>
-                  <td class="w-50 bg-gray text-right bg-red"><?php echo trans('total_gastos'); ?></td>
-                  <td class="w-50 text-left bg-danger"><?php echo currency_format($total_gasto); ?></td>
-                </tr>
-                <tr>
-                <td class="w-50 bg-gray text-right bg-blue"><?php echo trans('utilidad_neta'); ?></td>
-                <td class="w-50 text-left bg-info"><?php echo currency_format($utilidad_bruta); ?></td>
-                </tr>
-              </tbody>
-            </table>
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped mt-0">
+                <tbody>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-yellow">Costo Total de Venta</td>
+                    <td class="w-50 text-left bg-warning"><?php echo currency_format($total_precio_venta); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-orange">Costo Total de Compra</td>
+                    <td class="w-50 text-left bg-warning"><?php echo currency_format($total_precio_compra); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-green">Utilidad Bruta</td>
+                    <td class="w-50 text-left bg-success"><?php echo currency_format($utilidad_bruta); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-red">Total Gastos</td>
+                    <td class="w-50 text-left bg-danger"><?php echo currency_format($total_gasto); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-blue">Utilidad Neta</td>
+                    <td class="w-50 text-left bg-info"><?php echo currency_format($utilidad_neta); ?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-      </div>
     </div>
-
   </section>
   <!--Fin del contenido-->
 </div>
 <!--Fin del contenedor de contenido-->
-
 <?php include ("footer.php"); ?>
