@@ -67,6 +67,36 @@ function get_total_precio_compra($from, $to) {
   return $row && isset($row['total_precio_compra']) ? $row['total_precio_compra'] : 0;
 }
 
+function get_total_shipping($from, $to) {
+  global $db;
+  $store_id = store_id();
+
+  $query = "
+    SELECT SUM(sp.shipping_amount) AS total_shipping
+    FROM selling_price sp
+    JOIN selling_info s ON sp.invoice_id = s.invoice_id
+    WHERE s.store_id = :store_id
+      AND s.created_at BETWEEN :from AND :to
+      AND s.status = 1
+      AND s.payment_status = 'paid'
+      AND NOT EXISTS (
+        SELECT 1 FROM deleted_invoices_log dlog 
+        WHERE dlog.invoice_id = s.invoice_id
+      )
+  ";
+
+  $stmt = $db->prepare($query);
+  $stmt->execute([
+    ':store_id' => $store_id,
+    ':from' => $from . ' 00:00:00',
+    ':to' => $to . ' 23:59:59'
+  ]);
+  
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  return $row && isset($row['total_shipping']) ? $row['total_shipping'] : 0;
+}
+
+
 function get_total_gastos($from, $to) {
   global $db;
   $store_id = store_id();
@@ -90,6 +120,7 @@ function get_total_gastos($from, $to) {
 // CALCULOS
 $total_precio_venta = get_total_precio_venta($from, $to);
 $total_precio_compra = get_total_precio_compra($from, $to);
+$total_shipping = get_total_shipping($from, $to);
 $utilidad_bruta = $total_precio_venta - $total_precio_compra;
 $total_gasto = get_total_gastos($from, $to);
 $utilidad_neta = $utilidad_bruta - $total_gasto;
@@ -246,6 +277,10 @@ include ("left_sidebar.php") ;
                   <tr>
                     <td class="w-50 bg-gray text-right bg-orange">Costo Total de Compra</td>
                     <td class="w-50 text-left bg-warning"><?php echo currency_format($total_precio_compra); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="w-50 bg-gray text-right bg-yellow">Costo de Envío</td>
+                    <td class="w-50 text-left bg-warning"><?php echo currency_format($total_shipping); ?></td>
                   </tr>
                   <tr>
                     <td class="w-50 bg-gray text-right bg-green">Utilidad Bruta</td>
