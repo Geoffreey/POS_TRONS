@@ -52,3 +52,9 @@ function get_profit_amount($from=null, $to=null, $store_id=null)
 	$payment_model = registry()->get('loader')->model('payment');
 	return $payment_model->getProfitAmount($from, $to, $store_id);
 }
+
+function get_expenses_total_by_category($category_id, $from = null, $to = null, $store_id = null) 
+{
+    $expense_model = registry()->get('loader')->model('expense');
+    return $expense_model->getExpensesTotalByCategory($category_id, $from, $to, $store_id);
+}

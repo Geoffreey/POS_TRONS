@@ -4,7 +4,6 @@ session_start();
 include ("../_init.php");
 
 // Comprobar si el usuario inició sesión o no
-// If user is not logged in then return an alert message
 if (!is_loggedin()) {
   header('HTTP/1.1 422 Unprocessable Entity');
   header('Content-Type: application/json; charset=UTF-8');
@@ -28,27 +27,27 @@ $where_query = "returnable='no' AND status=1";
 $from = from();
 $to = to();
 
+if ($from && $to) {
+  $where_query .= " AND DATE(fecha_gasto) BETWEEN '$from' AND '$to'";
+}
+
 // tabla de base de datos a utilizar
-$table = "(SELECT category_id, MAX(fecha_gasto) as fecha_gasto, SUM(amount) as amount 
-  FROM expenses 
-  WHERE $where_query 
-  GROUP BY category_id
-) as expenses";
+$table = "(SELECT * FROM expenses 
+  WHERE $where_query GROUP BY category_id
+  ) as expenses";
 
- 
 // Llave principal de la tabla
-$primaryKey = 'category_id';
-
+$primaryKey = 'id';
 
 $columns = array(
   array(
-      'db' => 'category_id',
+      'db' => 'id',
       'dt' => 'DT_RowId',
-      'formatter' => function( $d, $row ) {
+      'formatter' => function($d, $row) {
           return 'row_'.$d;
       }
   ),
-  array( 'db' => 'category_id', 'dt' => 'serial_no' ),
+  array( 'db' => 'id', 'dt' => 'serial_no' ),
   array( 
     'db' => 'category_id',   
     'dt' => 'title',
@@ -56,42 +55,35 @@ $columns = array(
         $parent = '';
         $category = get_the_expense_category($row['category_id']);
         if ($category['parent_id']) {
-            $parent = get_the_expense_category($category['parent_id']);
-            $parent = $parent['category_name'] .  ' > ';
+            $parent_cat = get_the_expense_category($category['parent_id']);
+            $parent = $parent_cat['category_name'] . ' > ';
         }
-        $category = get_the_expense_category($row['category_id']);
         return $parent . $category['category_name'];
     }
   ),
-  array( 
-    'db' => 'fecha_gasto',   
+  array(
+    'db' => 'fecha_gasto',
     'dt' => 'fecha_gasto',
     'formatter' => function($d, $row) {
-      return $d ? date('Y-m-d H:i', strtotime($d)) : '';
+        return date('d-m-Y', strtotime($d));
     }
   ),
-  
   array( 
     'db' => 'amount',   
     'dt' => 'this_month',
-    'formatter' => function($d, $row) use($from,$to) {
-      $year = $from ? date('Y', strtotime($from)) : year();
-      $month = $from ? date('m', strtotime($from)) : month();
-      $days_in_month = get_total_day_in_month();
-      $from = date('Y-m-d',strtotime($year.'-'.$month.'-1'));
-      $to = $year.'-'.$month.'-'.$days_in_month;
-      $total = get_total_category_expense($row['category_id'],$from, $to,store_id(),'no');
+    'formatter' => function($d, $row) use($from, $to) {
+      $total = get_expenses_total_by_category($row['category_id'], $from, $to, store_id());
       return currency_format($total);
     }
   ),
   array( 
     'db' => 'amount',   
     'dt' => 'this_year',
-    'formatter' => function($d, $row) use($from,$to) {
-      $year = $from ? date('Y', strtotime($from)) : year();
-      $from = date('Y-m-d',strtotime($year.'-1-1'));
-      $to = $year.'-12-31';
-      $total = get_total_category_expense($row['category_id'],$from, $to,store_id(),'no');
+    'formatter' => function($d, $row) use($from) {
+      $year = $from ? date('Y', strtotime($from)) : date('Y');
+      $from_year = "$year-01-01";
+      $to_year = "$year-12-31";
+      $total = get_total_category_expense($row['category_id'], $from_year, $to_year, store_id(), 'no');
       return currency_format($total);
     }
   ),
@@ -99,7 +91,7 @@ $columns = array(
     'db' => 'amount',   
     'dt' => 'till_now',
     'formatter' => function($d, $row) {
-      $total = get_total_category_expense($row['category_id'],null,null,store_id(),'no');
+      $total = get_total_category_expense($row['category_id'], null, null, store_id(), 'no');
       return currency_format($total);
     }
   ),

@@ -109,17 +109,21 @@ function get_total_gastos($from, $to) {
     SELECT SUM(amount) AS total_gastos
     FROM expenses
     WHERE store_id = :store_id
-      AND created_at BETWEEN :from AND :to
+      AND returnable = 'no'
+      AND status = 1
+      AND DATE(fecha_gasto) BETWEEN :from AND :to
   ";
+
   $stmt = $db->prepare($query);
   $stmt->execute([
     ':store_id' => $store_id,
-    ':from' => $from . ' 00:00:00',
-    ':to' => $to . ' 23:59:59'
+    ':from' => $from,
+    ':to' => $to
   ]);
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_gastos']) ? $row['total_gastos'] : 0;
 }
+
 
 // CALCULOS
 $total_precio_venta = get_total_precio_venta($from, $to);

@@ -59,4 +59,35 @@ class ModelExpense extends Model
 		$row = $statement->fetch(PDO::FETCH_ASSOC);
 		return isset($row['total']) ? $row['total'] : 0;
 	}
+
+	public function getExpensesTotalByCategory($category_id, $from = null, $to = null, $store_id = null) 
+{
+    $store_id = $store_id ? $store_id : store_id();
+
+    $where_query = "store_id = :store_id AND returnable = 'no' AND status = 1 AND category_id = :category_id";
+
+    if ($from && $to) {
+        $where_query .= " AND DATE(fecha_gasto) BETWEEN :from AND :to";
+    }
+
+    $sql = "SELECT SUM(amount) AS total FROM expenses WHERE $where_query";
+
+    $stmt = $this->db->prepare($sql);
+
+    $params = [
+        ':store_id' => $store_id,
+        ':category_id' => $category_id
+    ];
+
+    if ($from && $to) {
+        $params[':from'] = $from;
+        $params[':to'] = $to;
+    }
+
+    $stmt->execute($params);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return isset($row['total']) ? $row['total'] : 0;
+}
+
 }
