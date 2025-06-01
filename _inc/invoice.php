@@ -26,6 +26,44 @@ $user_id = user_id();
 // LOAD INVOICE MODEL
 $invoice_model = registry()->get('loader')->model('invoice');
 
+// Reparar facturas mal marcadas como "due" pero ya pagadas
+if ($request->server['REQUEST_METHOD'] == 'POST' && isset($request->post['action_type']) && $request->post['action_type'] === 'FIX_PAID_STATUS') {
+    try {
+        if (!is_loggedin()) {
+            throw new Exception('No autorizado');
+        }
+
+        if (user_group_id() != 1 && !has_permission('access', 'update_sell_invoice_info')) {
+            throw new Exception('No tienes permiso para ejecutar esta acci?n.');
+        }
+
+        $statement = db()->prepare("
+            UPDATE selling_info si
+            JOIN (
+                SELECT 
+                    si.invoice_id,
+                    ROUND(SUM(COALESCE(p.amount, 0)), 2) AS total_paid,
+                    ROUND(sp.payable_amount, 2) AS payable_amount
+                FROM selling_info si
+                JOIN selling_price sp ON si.invoice_id = sp.invoice_id
+                LEFT JOIN payments p ON si.invoice_id = p.invoice_id AND p.type != 'discount'
+                WHERE si.store_id = ?
+                  AND si.payment_status = 'due'
+                GROUP BY si.invoice_id, sp.payable_amount
+                HAVING ABS(total_paid - payable_amount) <= 0.01 AND payable_amount > 0
+            ) pagos ON si.invoice_id = pagos.invoice_id
+            SET si.payment_status = 'paid'
+        ");
+        $statement->execute([store_id()]);
+
+        echo json_encode(['msg' => 'Facturas corregidas exitosamente']);
+        exit();
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+        exit();
+    }
+}
 
 // Delete invoice
 if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type'] == 'DELETE')

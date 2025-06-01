@@ -138,6 +138,9 @@ include ("left_sidebar.php");
 					                <?php endif; ?>
 				                    &nbsp;<span class="caret"></span>
 				                </button>
+								<button id="btn-fix-invoices" class="btn btn-sm btn-warning" style="margin-left:10px;">
+    								<i class="fa fa-wrench"></i> Reparar facturas pagadas mal marcadas
+								</button>
 				                <ul class="dropdown-menu" role="menu">
 				                	<li>
 				                    	<a href="invoice.php<?php echo $query_string ? $query_string.'&' : '?';?>">
@@ -297,5 +300,35 @@ include ("left_sidebar.php");
 	<!--Fin del contenido-->
 </div>
 <!--Fin del contenedor de contenido-->
+<!--FUNCION PARA REPARAR FACTURAS MAL PAGADAS-->
+<script>
+$(document).ready(function () {
+  $('#btn-fix-invoices').on('click', function () {
+    if (!confirm('¿Estás seguro que deseas corregir las facturas pagadas mal marcadas como "unpaid"?')) return;
+
+    $.ajax({
+      url: '../_inc/invoice.php',
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        action_type: 'FIX_PAID_STATUS'
+      },
+      beforeSend: function () {
+        $('#btn-fix-invoices').prop('disabled', true).html('<i class="fa fa-cog fa-spin"></i> Corrigiendo...');
+      },
+      success: function (res) {
+        alert(res.msg || 'Facturas corregidas exitosamente');
+        $('#invoice-invoice-list').DataTable().ajax.reload(); // Refresca la tabla
+      },
+      error: function (xhr) {
+        alert(xhr.responseJSON?.error || 'Ocurrió un error');
+      },
+      complete: function () {
+        $('#btn-fix-invoices').prop('disabled', false).html('<i class="fa fa-wrench"></i> Reparar facturas pagadas mal marcadas');
+      }
+    });
+  });
+});
+</script>
 
 <?php include ("footer.php"); ?>
