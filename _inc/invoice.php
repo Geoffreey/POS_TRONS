@@ -553,20 +553,31 @@ if (isset($request->get['social']) && ($request->get['social'] != 'undefined') &
 //$table = "(SELECT selling_info.*, (select sum(payable_amount) from selling_price where invoice_id=selling_info.invoice_id) as amount, (select name from pmethods where pmethod_id=selling_info.pmethod_id) as pmethod FROM `selling_info` WHERE {$where_query}) as selling_info";
 $table = "(SELECT selling_info.*, 
   (
-    (SELECT 
-      SUM((item_price * (item_quantity - return_quantity)) 
-        - ((item_price * (item_quantity - return_quantity)) * item_discount / 100) 
-        + item_tax)
-     FROM selling_item
-     WHERE invoice_id = selling_info.invoice_id)
+    ROUND(
+      (SELECT 
+        SUM((item_price * (item_quantity - return_quantity)) 
+          - ((item_price * (item_quantity - return_quantity)) * item_discount / 100) 
+          + item_tax)
+       FROM selling_item
+       WHERE invoice_id = selling_info.invoice_id), 2
+    )
     +
-    (SELECT shipping_amount 
-     FROM selling_price 
-     WHERE invoice_id = selling_info.invoice_id)
+    ROUND(
+      (SELECT shipping_amount 
+       FROM selling_price 
+       WHERE invoice_id = selling_info.invoice_id), 2
+    )
   ) AS amount,
   (SELECT name FROM pmethods WHERE pmethod_id = selling_info.pmethod_id) AS pmethod 
   FROM `selling_info` 
-  WHERE {$where_query}) AS selling_info";
+  WHERE {$where_query}
+    AND NOT EXISTS (
+      SELECT 1 FROM deleted_invoices_log dlog 
+      WHERE dlog.invoice_id = selling_info.invoice_id
+    )
+) AS selling_info";
+
+
 // Llave principal de la tabla
 $primaryKey = 'info_id';
 

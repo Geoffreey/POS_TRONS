@@ -25,60 +25,62 @@ $where_query = "si.store_id = '$store_id'";
 // Si hay filtro de fecha
 $from = from();
 $to = to();
-if ($from && $to) {
-    $where_query .= " AND si.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'";
+$from = from();
+$to = to();
+
+if (!$from || !$to) {
+  $from = date('Y-m-01');
+  $to = date('Y-m-d');
 }
 
+
 // Definimos la tabla, usando JOIN entre selling_price y selling_info
-     $table = "(SELECT 
-      sp.price_id, 
-      sp.invoice_id, 
-      si.created_at, 
-      SUM(sp.payable_amount - IFNULL(ri.return_total, 0)) AS amount
-    FROM selling_price sp
-    JOIN selling_info si ON sp.invoice_id = si.invoice_id
-    LEFT JOIN (
-        SELECT invoice_id, SUM(item_quantity * item_price) AS return_total
-        FROM return_items
-        GROUP BY invoice_id
-    ) ri ON sp.invoice_id = ri.invoice_id
-    LEFT JOIN (
-        SELECT invoice_id, SUM(item_quantity) AS total_sold
-        FROM selling_item
-        GROUP BY invoice_id
-    ) si2 ON sp.invoice_id = si2.invoice_id
-    LEFT JOIN (
-        SELECT invoice_id, SUM(item_quantity) AS total_returned
-        FROM return_items
-        GROUP BY invoice_id
-    ) ri2 ON sp.invoice_id = ri2.invoice_id
-    WHERE 
-        $where_query
-        AND (
-            si.payment_status = 'paid' 
-            OR (si2.total_sold > IFNULL(ri2.total_returned, 0))
-        )
-        AND NOT EXISTS (
-            SELECT 1 FROM deleted_invoices_log dlog 
-            WHERE dlog.invoice_id = sp.invoice_id
-        )
-    GROUP BY sp.invoice_id
-  ) as selling_summary";
+    $table = <<<EOT
+(
+  SELECT 
+    s.invoice_id,
+    s.created_at,
+    SUM(
+      (si.item_price - (si.item_price * si.item_discount / 100)) 
+      * (si.item_quantity - IFNULL(ri.return_qty, 0))
+    ) AS amount
+  FROM selling_item si
+  JOIN selling_info s ON si.invoice_id = s.invoice_id
+  JOIN selling_price sp ON s.invoice_id = sp.invoice_id
+  LEFT JOIN (
+    SELECT invoice_id, item_id, SUM(item_quantity) AS return_qty
+    FROM return_items
+    GROUP BY invoice_id, item_id
+  ) ri ON si.invoice_id = ri.invoice_id AND si.item_id = ri.item_id
+  WHERE s.store_id = $store_id
+    AND s.status = 1
+    AND s.payment_status = 'paid'
+    AND sp.payable_amount > 0
+    AND NOT EXISTS (
+      SELECT 1 FROM deleted_invoices_log dlog 
+      WHERE dlog.invoice_id = s.invoice_id
+    )
+    AND s.created_at BETWEEN '$from 00:00:00' AND '$to 23:59:59'
+  GROUP BY s.invoice_id
+) AS selling_summary
+EOT;
+
 
 
 // Llave primaria
-$primaryKey = 'price_id';
+$primaryKey = 'invoice_id';
 
 // Columnas para el DataTable
 $columns = array(
     array(
-        'db' => 'price_id', // 👈 usar price_id
-        'dt' => 'serial_no',
-        'formatter' => function($d, $row) {
-            static $count = 1;
-            return $count++;
-        }
-    ),
+    'db' => 'invoice_id',
+    'dt' => 'serial_no',
+    'formatter' => function($d, $row) {
+        static $count = 1;
+        return $count++;
+    }
+),
+
     array( 'db' => 'invoice_id', 'dt' => 'invoice_id' ),
     array( 'db' => 'created_at', 'dt' => 'created_at' ),
     array( 

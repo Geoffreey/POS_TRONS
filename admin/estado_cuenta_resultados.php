@@ -19,19 +19,24 @@ $to = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 function get_total_precio_venta($from, $to) {
   global $db;
   $store_id = store_id();
+
   $query = "
     SELECT 
       SUM((si.item_price - (si.item_price * si.item_discount / 100)) * (si.item_quantity - si.return_quantity)) AS total_precio_venta
     FROM selling_item si
     JOIN selling_info s ON si.invoice_id = s.invoice_id
+    JOIN selling_price sp ON s.invoice_id = sp.invoice_id
     WHERE s.store_id = :store_id
       AND s.created_at BETWEEN :from AND :to
       AND s.status = 1
+      AND s.payment_status = 'paid'
+      AND sp.payable_amount > 0
       AND NOT EXISTS (
         SELECT 1 FROM deleted_invoices_log dlog 
         WHERE dlog.invoice_id = s.invoice_id
       )
   ";
+
   $statement = $db->prepare($query);
   $statement->execute([
     ':store_id' => $store_id,
@@ -41,7 +46,6 @@ function get_total_precio_venta($from, $to) {
   $row = $statement->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_precio_venta']) ? $row['total_precio_venta'] : 0;
 }
-
 
 
 function get_total_precio_compra($from, $to) {
