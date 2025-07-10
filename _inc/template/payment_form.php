@@ -17,27 +17,36 @@ $customer_id = isset($request->get['customer_id']) ? $request->get['customer_id'
 	<div class="table-selection">
 		<div class="col-lg-3 col-md-3 col-sm-3 bootboox-tab-menu bootboox-container p-0">
 			<div class="list-group">
-				<?php $inc = 0;foreach(get_pmethods() as $pmethod) :?>
-					<a class="text-left list-group-item pmethod_item" id="pmethod_<?php echo $pmethod['pmethod_id']; ?>" href="javascript:void(0)" <?php echo $inc == 0 ? 'ng-init="selectPaymentMethod('.$pmethod['pmethod_id'].',\''.$pmethod['code_name'].'\')"' : null;?> ng-click="selectPaymentMethod('<?php echo $pmethod['pmethod_id']; ?>', '<?php echo $pmethod['code_name']; ?>')" onClick="return false;"><span class="fa fa-fw fa-angle-double-right"></span> <b><?php echo $pmethod['name']; ?>
-					<?php if (strtolower($pmethod['code_name']) == 'credit'):
-						$customer_balance = get_customer_balance($customer_id);
-						?>
-						<span ng-init="customerBalance='<?php echo $customer_balance;?>'">
-						(<?php echo get_currency_symbol();?><?php echo currency_format($customer_balance);?>)
-						</span>
-					<?php endif;?>
-					</b></a>
-				<?php $inc++;endforeach; ?>
+				<?php foreach(get_pmethods() as $pmethod): ?>
+    				<a class="text-left list-group-item pmethod_item" 
+       					id="pmethod_<?php echo $pmethod['pmethod_id']; ?>" 
+       					href="javascript:void(0)" 
+       					<?php echo ($pmethod['pmethod_id'] == 1) ? 'ng-init="selectPaymentMethod('.$pmethod['pmethod_id'].',\''.$pmethod['code_name'].'\')"' : ''; ?> 
+       					ng-click="selectPaymentMethod('<?php echo $pmethod['pmethod_id']; ?>', '<?php echo $pmethod['code_name']; ?>')" 
+       					onClick="return false;">
+       
+       					<span class="fa fa-fw fa-angle-double-right"></span> 
+       					<b><?php echo $pmethod['name']; ?>
+								<?php if (strtolower($pmethod['code_name']) == 'credit'):
+           						 $customer_balance = get_customer_balance($customer_id);
+       							?>
+           						<span ng-init="customerBalance='<?php echo $customer_balance;?>'">
+               						(<?php echo get_currency_symbol();?><?php echo currency_format($customer_balance);?>)
+           						</span>
+       						<?php endif; ?>
+						</b>
+					</a>
+				<?php endforeach; ?>
+
 				<label>TIPO DE ENVIO</label>
 				<select class="form-control select2" name="currier-select" id="currier-select">
-					<option value="null">Seleccione</option>
-					<?php
-					foreach (Currier as $k=>$v) { 
-						?>
-						<option value="<?= $k; ?>"><?= $v; ?></option>
-						<?php
-					}
-					?>
+    				<option value="null">Seleccione</option>
+    				<?php
+    					foreach (Currier as $k => $v) {
+        				$selected = ($k === 'CARGO') ? 'selected' : '';
+        				echo "<option value=\"$k\" $selected>$v</option>";
+    					}
+    				?>
 				</select>
 				<label>ESTADO DE ENVIO</label>
 				<select class="form-control select2" name="estado-envio" id="estado-envio">
@@ -51,14 +60,13 @@ $customer_id = isset($request->get['customer_id']) ? $request->get['customer_id'
 				</select>
 				<label>RED SOCIAL</label>
 				<select class="form-control select2" name="social-select" id="social-select">
-					<option value="null">Seleccione</option>
-					<?php
-					foreach (Social as $k=>$v) { 
-						?>
-						<option value="<?= $k; ?>"><?= $v; ?></option>
-						<?php
-					}
-					?>
+    				<option value="null">Seleccione</option>
+    				<?php
+    					foreach (Social as $k => $v) {
+        				$selected = ($k === 'TIK') ? 'selected' : '';
+        				echo "<option value=\"$k\" $selected>$v</option>";
+    					}
+    				?>
 				</select>
 			</div>
 		</div>

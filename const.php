@@ -9,11 +9,11 @@ const Currier =  [
 
 ];
 const Social = [
+    'TIK' => 'Tiktok',
     'FBT' => 'FB ttrons',
     'FBD' =>'FB duap',
     'INS' => 'Instagram',
     'XTW' => 'X (Twitter)',
-    'TIK' => 'Tiktok',
     'WAP' => 'WhatsApp',
     'WS' => 'Sitio Web'
 ];
