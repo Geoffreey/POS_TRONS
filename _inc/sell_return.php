@@ -218,8 +218,32 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     }
 
     $price_info = $invoice_model->getSellingPrice($invoice_id, $store_id);
-    $tpayable = $tpayable - $price_info['discount_amount'];
-    $return_amount = $tpayable;
+$tpayable = $tpayable - $price_info['discount_amount'];
+$return_amount = $tpayable;
+
+// Verificar si todos los productos fueron retornados
+$statement = db()->prepare("
+  SELECT SUM(item_quantity) as total_qty, SUM(return_quantity) as total_return
+  FROM selling_item
+  WHERE invoice_id = ?
+");
+$statement->execute([$invoice_id]);
+$totales = $statement->fetch(PDO::FETCH_ASSOC);
+
+// Si todos los productos fueron retornados, restar el costo de envío del retorno
+if ($totales && $totales['total_qty'] == $totales['total_return']) {
+    $shipping_amount = (float) ($invoice['shipping_amount'] ?? 0);
+
+    // Restar del total retornado
+    $return_amount -= $shipping_amount;
+
+    // Poner a 0 el shipping_amount en la factura
+    $statement = db()->prepare("UPDATE selling_price SET shipping_amount = 0 WHERE invoice_id = ?");
+    $statement->execute([$invoice_id]);
+
+    // También restar del tpayable para que se registre correctamente en la tabla returns
+    $tpayable -= $shipping_amount;
+}
     $paid_amount = $invoice['paid_amount'];
     $due = $invoice['due'];
     $balance = $invoice['balance'];
