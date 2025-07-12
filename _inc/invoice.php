@@ -261,12 +261,15 @@ if($request->server['REQUEST_METHOD'] == 'POST' && $request->post['action_type']
         $invoice_note = $request->post['invoice_note'];
         $status = $request->post['status'];
         $subtotal = $invoice_info['subtotal'];
+        $shipping_amount = $invoice_info['shipping_amount']; // ? Nuevo
         $payable_amount = $invoice_info['payable_amount'];
         $discount_amount = $request->post['discount_amount'];
 
         $Hooks->do_action('Before_Update_Invoice_Info', $invoice_id);
 
-        $payable_amount = $subtotal - ($subtotal*($discount_amount/100));
+        //$payable_amount = $subtotal - ($subtotal*($discount_amount/100));
+        // ? Recalcula correctamente el total a pagar
+        $payable_amount = $subtotal + $shipping_amount - ($subtotal * ($discount_amount / 100));
         $paid_amount = $invoice_info['paid_amount'];
         $due_paid = $invoice_info['due_paid'];
         $due = 0;
