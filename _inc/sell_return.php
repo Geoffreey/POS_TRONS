@@ -37,7 +37,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     $customer_id = $request->post['customer-id']; 
 
     // Check, if invoice exist or not
-    $statement = db()->prepare("SELECT `selling_info`.*, `selling_price`.`subtotal`, `selling_price`.`order_tax`, `selling_price`.`payable_amount`, `selling_price`.`paid_amount`, `selling_price`.`due`, `selling_price`.`balance`, `selling_price`.`cgst`, `selling_price`.`sgst`, `selling_price`.`igst` FROM `selling_info` LEFT JOIN `selling_price` ON (`selling_info`.`invoice_id` = `selling_price`.`invoice_id`) WHERE `selling_info`.`invoice_id` = ?");
+    $statement = db()->prepare("SELECT selling_info.*, selling_price.subtotal, selling_price.order_tax, selling_price.payable_amount, selling_price.paid_amount, selling_price.due, selling_price.balance, selling_price.cgst, selling_price.sgst, selling_price.igst FROM selling_info LEFT JOIN selling_price ON (selling_info.invoice_id = selling_price.invoice_id) WHERE selling_info.invoice_id = ?");
     $statement->execute(array($invoice_id));
     
     
@@ -101,16 +101,16 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
       $item_quantity_add = $item_quantity;
       $total_quantity += $item_quantity;
 
-      $statement = db()->prepare("SELECT * FROM `selling_item` WHERE `invoice_id` = ? AND `item_id` = ?");
+      $statement = db()->prepare("SELECT * FROM selling_item WHERE invoice_id = ? AND item_id = ?");
       $statement->execute(array($invoice_id, $item_id));
       $invoice_item = $statement->fetch(PDO::FETCH_ASSOC);
       if (!$invoice_item) {
         throw new Exception(trans('error_return_item_not_found'));
       }
 
-      $statement = db()->prepare("SELECT * FROM `products`
-        LEFT JOIN `product_to_store` p2s ON (`products`.`p_id` = `p2s`.`product_id`)
-        WHERE `p2s`.`store_id` = ? AND `p_id` = ?");
+      $statement = db()->prepare("SELECT * FROM products
+        LEFT JOIN product_to_store p2s ON (products.p_id = p2s.product_id)
+        WHERE p2s.store_id = ? AND p_id = ?");
       $statement->execute(array($store_id, $item_id));
       $product = $statement->fetch(PDO::FETCH_ASSOC);
       if (!$product) {
@@ -132,7 +132,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
           break;
         }
 
-        $statement = db()->prepare("SELECT * FROM `purchase_item` WHERE `store_id` = ? AND `invoice_id` = ? AND `item_id` = ?");
+        $statement = db()->prepare("SELECT * FROM purchase_item WHERE store_id = ? AND invoice_id = ? AND item_id = ?");
         $statement->execute(array($store_id, $purchase_invoice_id, $item_id));
         $purchase_item = $statement->fetch(PDO::FETCH_ASSOC);
 
@@ -141,7 +141,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
           throw new Exception('The product: '.$product['p_name'].' was not found in purchase history');
         }
 
-        $statement = db()->prepare("UPDATE `purchase_item` SET `status` = ? WHERE `store_id` = ? AND `invoice_id` = ? AND `item_id` = ? AND `status` = ?");
+        $statement = db()->prepare("UPDATE purchase_item SET status = ? WHERE store_id = ? AND invoice_id = ? AND item_id = ? AND status = ?");
         $statement->execute(array('stock', $store_id, $invoice_id, $item_id, 'active'));
         $sold = $purchase_item['total_sell'];
         if ($sold < $item_quantity_exist) {
@@ -151,7 +151,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
           $return_quantity = $item_quantity_exist;
           $item_quantity_exist = 0;
         }
-        $statement = db()->prepare("UPDATE `purchase_item` SET `total_sell` = `total_sell`-$return_quantity, `status` = ? WHERE `store_id` = ? AND `invoice_id` = ? AND `item_id` = ?");
+        $statement = db()->prepare("UPDATE purchase_item SET total_sell = total_sell-$return_quantity, status = ? WHERE store_id = ? AND invoice_id = ? AND item_id = ?");
         $statement->execute(array('active', $store_id, $purchase_invoice_id, $item_id));
         $item_purchase_price += $purchase_item['item_purchase_price'] * $return_quantity;
         $total_purchase_price += $item_purchase_price;
@@ -203,13 +203,13 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
       }
       $titem_tax += $item_tax;
 
-      $statement = db()->prepare("UPDATE `selling_item` SET `return_quantity` = `return_quantity`+$item_quantity WHERE `id` = ?");
+      $statement = db()->prepare("UPDATE selling_item SET return_quantity = return_quantity+$item_quantity WHERE id = ?");
       $statement->execute(array($invoice_item['id']));
 
-      $statement = db()->prepare("UPDATE `product_to_store` SET `quantity_in_stock` = `quantity_in_stock` + $item_quantity_add WHERE `store_id` = ? AND `product_id` = ?");
+      $statement = db()->prepare("UPDATE product_to_store SET quantity_in_stock = quantity_in_stock + $item_quantity_add WHERE store_id = ? AND product_id = ?");
       $statement->execute(array($store_id, $item_id));
 
-      $statement = db()->prepare("INSERT INTO `return_items` SET `store_id` = ?, `invoice_id` = ?, `item_id` = ?, `item_name` = ?, `item_quantity` = ?, `item_price` = ?, `item_purchase_price` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `item_total` = ?");
+      $statement = db()->prepare("INSERT INTO return_items SET store_id = ?, invoice_id = ?, item_id = ?, item_name = ?, item_quantity = ?, item_price = ?, item_purchase_price = ?, item_tax = ?, cgst = ?, sgst = ?, igst = ?, item_total = ?");
       $statement->execute(array($store_id, $invoice_id, $item_id, $item_name, $item_quantity, $item_price, $item_purchase_price, $item_tax, $cgst, $sgst, $igst, $item_total));
     };
 
@@ -233,7 +233,7 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     } elseif ($due > $return_amount) {
       $due = $due-$return_amount;
     }
-    $statement = db()->prepare("UPDATE `selling_info` SET `payment_status` = ? WHERE `store_id` = ? AND `invoice_id` = ?");
+    $statement = db()->prepare("UPDATE selling_info SET payment_status = ? WHERE store_id = ? AND invoice_id = ?");
     $statement->execute(array($payment_status, $store_id, $invoice_id));
 
     $tcgst = 0;
@@ -253,10 +253,10 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
     $capital = $capital > 0 ? $capital * $tpayable : 0;
     $profit = ($tsubtotal - $total_purchase_price) - $price_info['discount_amount'];
 
-    $statement = db()->prepare("UPDATE `selling_price` SET `due` = ? WHERE `store_id` = ? AND `invoice_id` = ?");
+    $statement = db()->prepare("UPDATE selling_price SET due = ? WHERE store_id = ? AND invoice_id = ?");
     $statement->execute(array($due, $store_id, $invoice_id));
 
-    $statement = db()->prepare("INSERT INTO `returns` SET `store_id` = ?, `reference_no` = ?, `invoice_id` = ?, `customer_id` = ?, `note` = ?, `total_item` = ?, `total_quantity` = ?, `subtotal` = ?, `total_amount` = ?, `item_tax` = ?, `cgst` = ?, `sgst` = ?, `igst` = ?, `total_purchase_price` = ?, `profit` = ?, `created_by` = ?, `created_at` = ?");
+    $statement = db()->prepare("INSERT INTO returns SET store_id = ?, reference_no = ?, invoice_id = ?, customer_id = ?, note = ?, total_item = ?, total_quantity = ?, subtotal = ?, total_amount = ?, item_tax = ?, cgst = ?, sgst = ?, igst = ?, total_purchase_price = ?, profit = ?, created_by = ?, created_at = ?");
     $statement->execute(array($store_id, $reference_no, $invoice_id, $customer_id, $note, $total_item, $total_quantity, $tsubtotal, $tpayable, $titem_tax, $tcgst, $tsgst, $tigst, $total_purchase_price, $profit, $user_id,date('Y-m-d H:i:s',time())));
 
     if ($return_amount > 0) {
@@ -266,10 +266,10 @@ if ($request->server['REQUEST_METHOD'] == 'POST' && $request->get['action_type']
         $is_profit = 1;
         $is_hide = 0;
       }
-      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?,  `is_profit` = ?, `is_hide` = ?, `store_id` = ?, `invoice_id` = ?, `reference_no` = ?, `capital` = ?, `amount` = ?, `created_by` = ?");
+      $statement = db()->prepare("INSERT INTO payments SET type = ?,  is_profit = ?, is_hide = ?, store_id = ?, invoice_id = ?, reference_no = ?, capital = ?, amount = ?, created_by = ?");
       $statement->execute(array('return', $is_profit, $is_hide, $store_id, $invoice_id, $reference_no, -$capital, -$return_amount, $user_id));
 
-      $statement = db()->prepare("UPDATE `selling_price` SET `return_amount` = `return_amount`+$return_amount WHERE `store_id` = ? AND `invoice_id` = ?");
+      $statement = db()->prepare("UPDATE selling_price SET return_amount = return_amount+$return_amount WHERE store_id = ? AND invoice_id = ?");
       $statement->execute(array($store_id, $invoice_id));
 
       // Recalcular el total neto después de la devolución (ajusta el payable_amount)
@@ -291,16 +291,16 @@ $statement->execute([$invoice_id, $invoice_id]);
     }
 
     if ($balance > 0) {
-      $statement = db()->prepare("INSERT INTO `payments` SET `type` = ?, `store_id` = ?, `invoice_id` = ?, `note` = ?, `pos_balance` = ?, `created_by` = ?");
+      $statement = db()->prepare("INSERT INTO payments SET type = ?, store_id = ?, invoice_id = ?, note = ?, pos_balance = ?, created_by = ?");
       $statement->execute(array('change', $store_id, $invoice_id, 'return_change', $balance, $user_id));
 
-      $statement = db()->prepare("UPDATE `selling_price` SET `balance` = $balance WHERE `store_id` = ? AND `invoice_id` = ?");
+      $statement = db()->prepare("UPDATE selling_price SET balance = $balance WHERE store_id = ? AND invoice_id = ?");
       $statement->execute(array($store_id, $invoice_id));
     }
 
     if ($due > 0) {
       $due_paid = $invoice['due'] - $due;
-      $statement = db()->prepare("UPDATE `customer_to_store` SET `due` = `due` - {$due_paid}  WHERE `store_id` = ? AND `customer_id` = ?");
+      $statement = db()->prepare("UPDATE customer_to_store SET due = due - {$due_paid}  WHERE store_id = ? AND customer_id = ?");
       $statement->execute(array($store_id, $customer_id));
     }
 
@@ -308,11 +308,11 @@ $statement->execute([$invoice_id, $invoice_id]);
     if (($account_id = store('deposit_account_id')) && $return_amount > 0) 
     {
       $ref_no = unique_transaction_ref_no('withdraw');
-      $statement = db()->prepare("SELECT `category_id` FROM `expense_categorys` WHERE `sell_return` = ?");
+      $statement = db()->prepare("SELECT category_id FROM expense_categorys WHERE sell_return = ?");
       $statement->execute(array(1));
       $category = $statement->fetch(PDO::FETCH_ASSOC);
       $exp_category_id = $category['category_id'];
-      $statement = db()->prepare("SELECT `source_id` FROM `income_sources` WHERE `for_sell` = ?");
+      $statement = db()->prepare("SELECT source_id FROM income_sources WHERE for_sell = ?");
       $statement->execute(array(1));
       $source = $statement->fetch(PDO::FETCH_ASSOC);
       $source_id = $source['source_id'];
@@ -328,17 +328,17 @@ $statement->execute([$invoice_id, $invoice_id]);
         $is_hide = 0;
       }
 
-      $statement = db()->prepare("INSERT INTO `bank_transaction_info` (store_id, is_substract, is_hide, account_id, source_id, exp_category_id, ref_no, invoice_id, transaction_type, title, details, image, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      $statement = db()->prepare("INSERT INTO bank_transaction_info (store_id, is_substract, is_hide, account_id, source_id, exp_category_id, ref_no, invoice_id, transaction_type, title, details, image, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       $statement->execute(array($store_id, $is_substract, $is_hide, $account_id, $source_id, $exp_category_id, $ref_no, $invoice_id, $transaction_type, $title, $details, $image, $user_id, date_time()));
       $info_id = db()->lastInsertId();
   
-      $statement = db()->prepare("INSERT INTO `bank_transaction_price` (store_id, info_id, ref_no, amount) VALUES (?, ?, ?, ?)");
+      $statement = db()->prepare("INSERT INTO bank_transaction_price (store_id, info_id, ref_no, amount) VALUES (?, ?, ?, ?)");
       $statement->execute(array($store_id, $info_id, $ref_no, $withdraw_amount));
 
-      $statement = db()->prepare("UPDATE `bank_account_to_store` SET `withdraw` = `withdraw` + $withdraw_amount WHERE `store_id` = ? AND `account_id` = ?");
+      $statement = db()->prepare("UPDATE bank_account_to_store SET withdraw = withdraw + $withdraw_amount WHERE store_id = ? AND account_id = ?");
       $statement->execute(array($store_id, $account_id));
 
-      $statement = db()->prepare("UPDATE `bank_accounts` SET `total_deposit` = `total_deposit` + $withdraw_amount WHERE `id` = ?");
+      $statement = db()->prepare("UPDATE bank_accounts SET total_deposit = total_deposit + $withdraw_amount WHERE id = ?");
       $statement->execute(array($account_id));
     }
 
@@ -384,7 +384,7 @@ if (from()) {
 }
 
 // tabla de base de datos a utilizar
-$table = "(SELECT returns.* FROM `returns` 
+$table = "(SELECT returns.* FROM returns 
   WHERE $where_query) as returns";
 
 // Llave principal de la tabla
