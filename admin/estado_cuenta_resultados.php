@@ -277,6 +277,10 @@ include ("left_sidebar.php") ;
           <div class="col-md-6 col-md-offset-3">
             <div class="table-responsive">
               <table class="table table-bordered table-striped mt-0">
+                <button id="btnActualizarCostos" class="btn btn-warning">
+    <i class="fa fa-refresh"></i> Actualizar precios de compra
+</button>
+
                 <tbody>
                   <tr>
                     <td class="w-50 bg-gray text-right bg-yellow">Costo Total de Venta</td>
@@ -304,6 +308,26 @@ include ("left_sidebar.php") ;
                   </tr>
                 </tbody>
               </table>
+              <script>
+document.getElementById("btnActualizarCostos").addEventListener("click", function() {
+    if (confirm("¿Estás seguro que deseas actualizar los precios de compra de los ítems vendidos?")) {
+        fetch('actualizar_precios_item.php', {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.status === 'success') {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            alert("Error en la solicitud: " + error);
+        });
+    }
+});
+</script>
+
             </div>
           </div>
         </div>
