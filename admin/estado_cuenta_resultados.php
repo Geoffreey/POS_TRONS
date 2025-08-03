@@ -15,8 +15,10 @@ if (user_group_id() != 1 && !has_permission('access', 'read_profit_and_loss_repo
 $from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
 $to = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 
-// FUNCIONES ACTUALIZADAS
-function get_total_precio_venta($from, $to) {
+$estado_envio = isset($_GET['estado_envio']) ? trim($_GET['estado_envio']) : '';
+
+// Funcion calculo precio de venta
+function get_total_precio_venta($from, $to, $estado_envio = '') {
   global $db;
   $store_id = store_id();
 
@@ -37,18 +39,28 @@ function get_total_precio_venta($from, $to) {
       )
   ";
 
-  $statement = $db->prepare($query);
-  $statement->execute([
+  if ($estado_envio !== '') {
+    $query .= " AND s.estadoEnvio = :estado_envio";
+  }
+
+  $params = [
     ':store_id' => $store_id,
     ':from' => $from . ' 00:00:00',
     ':to' => $to . ' 23:59:59'
-  ]);
+  ];
+
+  if ($estado_envio !== '') {
+    $params[':estado_envio'] = $estado_envio;
+  }
+
+  $statement = $db->prepare($query);
+  $statement->execute($params);
   $row = $statement->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_precio_venta']) ? $row['total_precio_venta'] : 0;
 }
 
-
-function get_total_precio_compra($from, $to) {
+//Funcion calculo costo compra
+function get_total_precio_compra($from, $to, $estado_envio = '') {
   global $db;
   $store_id = store_id();
 
@@ -59,19 +71,30 @@ function get_total_precio_compra($from, $to) {
     WHERE s.store_id = :store_id
       AND s.created_at BETWEEN :from AND :to
       AND s.status = 1
-      
   ";
-  $stmt = $db->prepare($query);
-  $stmt->execute([
+
+  if ($estado_envio !== '') {
+    $query .= " AND s.estadoEnvio = :estado_envio";
+  }
+
+  $params = [
     ':store_id' => $store_id,
     ':from' => $from . ' 00:00:00',
     ':to' => $to . ' 23:59:59'
-  ]);
+  ];
+
+  if ($estado_envio !== '') {
+    $params[':estado_envio'] = $estado_envio;
+  }
+
+  $stmt = $db->prepare($query);
+  $stmt->execute($params);
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_precio_compra']) ? $row['total_precio_compra'] : 0;
 }
 
-function get_total_shipping($from, $to) {
+//Funcnion calculo costo de envio
+function get_total_shipping($from, $to, $estado_envio = '') {
   global $db;
   $store_id = store_id();
 
@@ -89,13 +112,22 @@ function get_total_shipping($from, $to) {
       )
   ";
 
-  $stmt = $db->prepare($query);
-  $stmt->execute([
+  if ($estado_envio !== '') {
+    $query .= " AND s.estadoEnvio = :estado_envio";
+  }
+
+  $params = [
     ':store_id' => $store_id,
     ':from' => $from . ' 00:00:00',
     ':to' => $to . ' 23:59:59'
-  ]);
-  
+  ];
+
+  if ($estado_envio !== '') {
+    $params[':estado_envio'] = $estado_envio;
+  }
+
+  $stmt = $db->prepare($query);
+  $stmt->execute($params);
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row && isset($row['total_shipping']) ? $row['total_shipping'] : 0;
 }
@@ -126,11 +158,11 @@ function get_total_gastos($from, $to) {
 
 
 // CALCULOS
-$total_precio_venta = get_total_precio_venta($from, $to);
-$total_precio_compra = get_total_precio_compra($from, $to);
-$total_shipping = get_total_shipping($from, $to);
+$total_precio_venta = get_total_precio_venta($from, $to, $estado_envio);
+$total_precio_compra = get_total_precio_compra($from, $to, $estado_envio);
+$total_shipping = get_total_shipping($from, $to, $estado_envio);
 $utilidad_bruta = $total_precio_venta - $total_precio_compra;
-$total_gasto = get_total_gastos($from, $to);
+$total_gasto = get_total_gastos($from, $to, $estado_envio);
 $utilidad_neta = $utilidad_bruta - $total_gasto;
 
 // Establecer título del documento
@@ -243,27 +275,38 @@ include ("left_sidebar.php") ;
     </div>
     <!--Filtro por fecha-->
     <div class="box box-default">
-      <div class="box-header with-border">
-        <form method="get" action="">
-          <div class="row">
-            <div class="col-md-4">
-              <label>Desde:</label>
-              <input type="date" name="from" class="form-control" value="<?php echo isset($_GET['from']) ? $_GET['from'] : date('Y-m-01'); ?>" required>
-            </div>
-            <div class="col-md-4">
-              <label>Hasta:</label>
-              <input type="date" name="to" class="form-control" value="<?php echo isset($_GET['to']) ? $_GET['to'] : date('Y-m-d'); ?>" required>
-            </div>
-            <div class="col-md-4">
-              <label>&nbsp;</label><br>
-              <button type="submit" class="btn btn-primary">
-                <i class="fa fa-filter"></i> Filtrar
-              </button>
-            </div>
-          </div>
-        </form>
+  <div class="box-header with-border">
+    <form method="get" action="">
+      <div class="row">
+        <div class="col-md-3">
+          <label>Desde:</label>
+          <input type="date" name="from" class="form-control" value="<?php echo isset($_GET['from']) ? $_GET['from'] : date('Y-m-01'); ?>" required>
+        </div>
+        <div class="col-md-3">
+          <label>Hasta:</label>
+          <input type="date" name="to" class="form-control" value="<?php echo isset($_GET['to']) ? $_GET['to'] : date('Y-m-d'); ?>" required>
+        </div>
+        <div class="col-md-3">
+          <label>Estado de Envío:</label>
+          <select name="estado_envio" class="form-control">
+            <option value="">-- Todos --</option>
+            <option value="0" <?php echo isset($_GET['estado_envio']) && $_GET['estado_envio'] === '0' ? 'selected' : ''; ?>>No entregado</option>
+            <option value="1" <?php echo isset($_GET['estado_envio']) && $_GET['estado_envio'] === '1' ? 'selected' : ''; ?>>En ruta</option>
+            <option value="2" <?php echo isset($_GET['estado_envio']) && $_GET['estado_envio'] === '2' ? 'selected' : ''; ?>>Entregado</option>
+            <option value="3" <?php echo isset($_GET['estado_envio']) && $_GET['estado_envio'] === '3' ? 'selected' : ''; ?>>Pagado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label>&nbsp;</label><br>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-filter"></i> Filtrar
+          </button>
+        </div>
       </div>
-    </div>
+    </form>
+  </div>
+</div>
+
     <!--tabla de resultados-->
     <div class="box box-default">
       <div class="box-header text-center">
