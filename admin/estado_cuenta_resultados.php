@@ -277,10 +277,9 @@ include ("left_sidebar.php") ;
           <div class="col-md-6 col-md-offset-3">
             <div class="table-responsive">
               <table class="table table-bordered table-striped mt-0">
-                <button id="btnActualizarCostos" class="btn btn-warning">
-    <i class="fa fa-refresh"></i> Actualizar precios de compra
-</button>
-
+                <button id="btnActualizarCostos" class="btn bg-blue">
+                  <i class="fa fa-refresh"></i> Actualizar tabla
+                </button>
                 <tbody>
                   <tr>
                     <td class="w-50 bg-gray text-right bg-yellow">Costo Total de Venta</td>
