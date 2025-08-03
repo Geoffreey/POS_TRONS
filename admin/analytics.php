@@ -66,6 +66,19 @@ include ("left_sidebar.php");
       </div>
     </div>
     <?php endif; ?>
+    
+    <!--Filtro por fecha-->
+    <form class="form-inline mb-3" method="get" action="">
+      <div class="form-group">
+        <label for="from">Desde:</label>
+        <input type="date" class="form-control" name="from" value="<?php echo isset($_GET['from']) ? $_GET['from'] : date('Y-m-01'); ?>">
+      </div>
+      <div class="form-group mx-sm-3">
+        <label for="to">Hasta:</label>
+        <input type="date" class="form-control" name="to" value="<?php echo isset($_GET['to']) ? $_GET['to'] : date('Y-m-d'); ?>">
+      </div>
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
 
     <div class="row">
       <div class="col-md-3 col-sm-3 col-xs-12">
