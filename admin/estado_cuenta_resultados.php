@@ -309,25 +309,24 @@ include ("left_sidebar.php") ;
                 </tbody>
               </table>
               <script>
-document.getElementById("btnActualizarCostos").addEventListener("click", function() {
-    if (confirm("¿Estás seguro que deseas actualizar los precios de compra de los ítems vendidos?")) {
-        fetch('actualizar_precios_item.php', {
-            method: 'POST',
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.status === 'success') {
-                location.reload();
-            }
-        })
-        .catch(error => {
-            alert("Error en la solicitud: " + error);
-        });
-    }
-});
-</script>
-
+                document.getElementById("btnActualizarCostos").addEventListener("click", function() {
+                if (confirm("¿Estás seguro que deseas actualizar los precios de compra de los ítems vendidos?")) {
+                  fetch('actualizar_precios_item.php', {
+                    method: 'POST'
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                  alert(data.message);
+                  if (data.status === 'success') {
+                  location.reload();
+                }
+                })
+                .catch(error => {
+                alert("Error en la solicitud: " + error);
+                });
+                }
+                });
+              </script>
             </div>
           </div>
         </div>
