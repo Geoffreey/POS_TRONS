@@ -207,6 +207,13 @@ $statement->execute(array(
           $statement = db()->prepare("UPDATE `bank_accounts` SET `total_deposit` = `total_deposit` + $withdraw_amount WHERE `id` = ?");
           $statement->execute(array($account_id));
         }
+// ? Marcar como confirmada la eliminaci?n en el log
+$statement = db()->prepare("
+    UPDATE deleted_invoices_log
+    SET confirmed = 1
+    WHERE invoice_id = ?
+");
+$statement->execute([$invoice_id]);
 
         $Hooks->do_action('After_Delete_Invoice', $request);
         // ? RESPUESTA JSON CORRECTA
@@ -575,9 +582,10 @@ $table = "(SELECT selling_info.*,
   FROM `selling_info` 
   WHERE {$where_query}
     AND NOT EXISTS (
-      SELECT 1 FROM deleted_invoices_log dlog 
-      WHERE dlog.invoice_id = selling_info.invoice_id
-    )
+  SELECT 1 FROM deleted_invoices_log dlog 
+  WHERE dlog.invoice_id = selling_info.invoice_id
+    AND COALESCE(dlog.confirmed,0) = 1
+)
 ) AS selling_info";
 
 
