@@ -599,69 +599,81 @@ class ModelInvoice extends Model
     public function getInvoiceItems($invoice_id, $store_id = null)
 {
     $store_id = $store_id ? $store_id : store_id();
-    $statement = $this->db->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
+    $sql = "SELECT si.*
+            FROM selling_item si
+            JOIN selling_info s
+              ON s.invoice_id = si.invoice_id
+             AND s.store_id   = si.store_id
+            WHERE si.store_id  = ?
+              AND si.invoice_id= ?
+              AND si.created_at <= s.created_at   -- ← clave: solo ítems existentes al emitir
+            ORDER BY si.item_id";
+    $statement = $this->db->prepare($sql);
     $statement->execute(array($store_id, $invoice_id));
     $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+
     $array = array();
-    $i = 0;
-
-    foreach ($rows as $row) {
+    foreach ($rows as $i => $row) {
         $array[$i] = $row;
-
-        // Obtener el producto
         $product = get_the_product($row['item_id']);
-
-        // Verificar si `unit_id` existe en el producto
-        if ($product && isset($product['unit_id'])) {
-            $array[$i]['unitName'] = get_the_unit($product['unit_id'], 'unit_name');
-        } else {
-            $array[$i]['unitName'] = 'N/A'; // O cualquier valor por defecto
-        }
-        
-        $i++;
+        $array[$i]['unitName'] = ($product && isset($product['unit_id']))
+            ? get_the_unit($product['unit_id'], 'unit_name')
+            : 'N/A';
     }
     return $array;
 }
+
     
     public function getInvoiceItemsHTML($invoice_id, $store_id = null)
-    {
-        $store_id = $store_id ? $store_id : store_id();
-        $statement = $this->db->prepare("SELECT * FROM `selling_item` WHERE `store_id` = ? AND `invoice_id` = ?");
-        $statement->execute(array($store_id, $invoice_id));
-        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
-        $i = 0;
-        $html = '<table class="table table-bordered mb-0">';
-        $html .= '<thead>';
-        $html .= '<tr class="bg-gray">';
-        $html .= '<td class="text-center" style="padding:0 2px;">Name</td>';
-        $html .= '<td class="text-right" style="padding:0 2px;">Sell</td>';
-        $html .= '<td class="text-center" style="padding:0 2px;">Qty.</td>';
-        $html .= '<td class="text-right" style="padding:0 2px;">Subtotal</td>';
-        $html .= '</tr>';
-        $html .= '</thead>';
-        $sell = 0;
-        $qty = 0;
-        $total = 0;
-        foreach ($rows as $row) {
-            $html .= '<tr class="bg-success">';
-            $html .= '<td class="text-center" style="padding:0 2px;">' . $row['item_name'] . '</td>';
-            $html .= '<td class="text-right" style="padding:0 2px;">' . currency_format($row['item_price']) . '</td>';
-            $html .= '<td class="text-center" style="padding:0 2px;">' . currency_format($row['item_quantity']) . ' ' . get_the_unit(get_the_product($row['item_id'])['unit_id'], 'unit_name') . '</td>';
-            $html .= '<td class="text-right" style="padding:0 2px;">' . currency_format($row['item_total']) . '</td>';
-            $html .= '</tr>';
-            $sell += $row['item_price'];
-            $qty += $row['item_quantity'];
-            $total += $row['item_total'];
+{
+    $store_id = $store_id ? $store_id : store_id();
+    $sql = "SELECT si.*
+            FROM selling_item si
+            JOIN selling_info s
+              ON s.invoice_id = si.invoice_id
+             AND s.store_id   = si.store_id
+            WHERE si.store_id  = ?
+              AND si.invoice_id= ?
+              AND si.created_at <= s.created_at
+            ORDER BY si.item_id";
+    $statement = $this->db->prepare($sql);
+    $statement->execute(array($store_id, $invoice_id));
+    $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+    $html = '<table class="table table-bordered mb-0">';
+    $html .= '<thead><tr class="bg-gray">';
+    $html .= '<td class="text-center" style="padding:0 2px;">Name</td>';
+    $html .= '<td class="text-right"  style="padding:0 2px;">Sell</td>';
+    $html .= '<td class="text-center" style="padding:0 2px;">Qty.</td>';
+    $html .= '<td class="text-right"  style="padding:0 2px;">Subtotal</td>';
+    $html .= '</tr></thead>';
+
+    $sell=0;$qty=0;$total=0;
+    foreach ($rows as $row) {
+        $unitName = 'N/A';
+        $product = get_the_product($row['item_id']);
+        if ($product && isset($product['unit_id'])) {
+            $unitName = get_the_unit($product['unit_id'], 'unit_name');
         }
-        $html .= '<tr class="bg-warning">';
-        $html .= '<td class="text-right" style="padding:0 2px;">Total</td>';
-        $html .= '<td class="text-right" style="padding:0 2px;">' . currency_format($sell) . '</td>';
-        $html .= '<td class="text-center" style="padding:0 2px;">' . currency_format($qty) . '</td>';
-        $html .= '<td class="text-right" style="padding:0 2px;">' . currency_format($total) . '</td>';
+        $html .= '<tr class="bg-success">';
+        $html .= '<td class="text-center" style="padding:0 2px;">'.$row['item_name'].'</td>';
+        $html .= '<td class="text-right"  style="padding:0 2px;">'.currency_format($row['item_price']).'</td>';
+        $html .= '<td class="text-center" style="padding:0 2px;">'.currency_format($row['item_quantity']).' '.$unitName.'</td>';
+        $html .= '<td class="text-right"  style="padding:0 2px;">'.currency_format($row['item_total']).'</td>';
         $html .= '</tr>';
-        $html .= '</table>';
-        return $html;
+        $sell  += $row['item_price'];
+        $qty   += $row['item_quantity'];
+        $total += $row['item_total'];
     }
+    $html .= '<tr class="bg-warning">';
+    $html .= '<td class="text-right" style="padding:0 2px;">Total</td>';
+    $html .= '<td class="text-right" style="padding:0 2px;">'.currency_format($sell).'</td>';
+    $html .= '<td class="text-center" style="padding:0 2px;">'.currency_format($qty).'</td>';
+    $html .= '<td class="text-right" style="padding:0 2px;">'.currency_format($total).'</td>';
+    $html .= '</tr></table>';
+    return $html;
+}
+
 
     public function getInvoiceItemInfo($invoice_id, $item_id, $store_id = null)
     {
@@ -672,12 +684,28 @@ class ModelInvoice extends Model
     }
     
     public function getInvoiceItemTaxes($invoice_id, $store_id = null)
-    {
-        $store_id = $store_id ? $store_id : store_id();
-        $statement = $this->db->prepare("SELECT SUM(`item_quantity`) as qty, SUM(`tax`) as tax, item_tax, `taxrates`.`taxrate_name`, `taxrates`.`code_name` FROM `selling_item` LEFT JOIN `taxrates` ON (`selling_item`.`taxrate_id` = `taxrates`.`taxrate_id`) WHERE `store_id` = ? AND invoice_id = ? GROUP BY `selling_item`.`taxrate_id`");
-        $statement->execute(array($store_id, $invoice_id));
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
+{
+    $store_id = $store_id ? $store_id : store_id();
+    $sql = "SELECT SUM(si.item_quantity) AS qty,
+                   SUM(si.tax)          AS tax,
+                   si.item_tax,
+                   t.taxrate_name,
+                   t.code_name
+            FROM selling_item si
+            JOIN selling_info s
+              ON s.invoice_id = si.invoice_id
+             AND s.store_id   = si.store_id
+            LEFT JOIN taxrates t
+              ON si.taxrate_id = t.taxrate_id
+            WHERE si.store_id   = ?
+              AND si.invoice_id = ?
+              AND si.created_at <= s.created_at
+            GROUP BY si.taxrate_id";
+    $statement = $this->db->prepare($sql);
+    $statement->execute(array($store_id, $invoice_id));
+    return $statement->fetchAll(PDO::FETCH_ASSOC);
+}
+
     
     public function getSellingPrice($invoice_id, $store_id = null)
     {
