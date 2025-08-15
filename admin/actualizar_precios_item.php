@@ -19,8 +19,11 @@ $store_id = store_id();
 try {
     $statement = $db->prepare("
         UPDATE selling_item si
-        JOIN purchase_item ip ON si.item_id = ip.item_id AND si.store_id = ip.store_id
-        SET si.item_purchase_price = ip.item_purchase_price
+        JOIN purchase_item pi 
+        ON si.purchase_invoice_id = pi.invoice_id
+        AND si.item_id = pi.item_id
+        AND si.store_id = pi.store_id
+        SET si.item_purchase_price = pi.item_purchase_price
         WHERE si.store_id = ?
     ");
     $statement->execute([$store_id]);
