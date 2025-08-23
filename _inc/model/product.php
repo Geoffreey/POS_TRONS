@@ -350,7 +350,7 @@ class ModelProduct extends Model
 		$sql = "SELECT * FROM `products` p 
 			LEFT JOIN `product_to_store` p2s ON (`p`.`p_id` = `p2s`.`product_id`) 
 			LEFT JOIN `suppliers` s ON (`p2s`.`sup_id` = `s`.`sup_id`) 
-			LEFT JOIN `catedorys` p ON (`p`.`catedory_id` = `p`.`category_id`)
+			LEFT JOIN `categorys` c ON (`p`.`category_id` = `p`.`category_id`)
 			LEFT JOIN `brands` b ON (`p2s`.`brand_id` = `b`.`brand_id`) 
 			LEFT JOIN `boxes` bx ON (`p2s`.`box_id` = `bx`.`box_id`) 
 			LEFT JOIN `taxrates` tr ON (`p2s`.`taxrate_id` = `tr`.`taxrate_id`) 
