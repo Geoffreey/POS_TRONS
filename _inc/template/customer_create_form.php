@@ -30,6 +30,15 @@
     </div>
 
     <div class="form-group">
+      <label for="customer_mobile" class="col-sm-3 control-label">
+        <?php echo sprintf(trans('label_CELULAR_2'), null); ?>
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" id="customer_mobile2" value="<?php echo isset($request->post['customer_mobile2']) ? $request->post['customer_mobile2'] : null; ?>" name="customer_mobile2">
+      </div>
+    </div>
+
+    <div class="form-group">
       <label for="customer_nit" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_nit'), null); ?>
       </label>

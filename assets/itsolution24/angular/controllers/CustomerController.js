@@ -53,10 +53,10 @@ function (
             [10, 25, 50, 100, 200, "All"]
         ],
         "columnDefs": [
-            {"targets": [5, 6, 7, 8], "orderable": false},
+            {"targets": [ 6, 7, 8, 9], "orderable": false},
             {"visible": false,  "targets": hideColumsArray},
-            {"className": "text-right", "targets": [5]},
-            {"className": "text-center", "targets": [0, 5, 6, 7, 8, 9]},
+            {"className": "text-right", "targets": [6]},
+            {"className": "text-center", "targets": [0, 6, 7, 8, 9, 10]},
             { 
                 "targets": [0],
                 'createdCell':  function (td, cellData, rowData, row, col) {
@@ -117,11 +117,18 @@ function (
                    $(td).attr('data-title', $("#customer-customer-list thead tr th:eq(9)").html());
                 }
             },
+            { 
+                "targets": [10],
+                'createdCell':  function (td, cellData, rowData, row, col) {
+                   $(td).attr('data-title', $("#customer-customer-list thead tr th:eq(9)").html());
+                }
+            },
         ],
         "aoColumns": [
             {data : "customer_id"},
             {data : "customer_name"},
             {data : "customer_mobile"},
+            {data : "customer_mobile2"},
             {data : "customer_nit"},
             {data : "customer_sex"},
             {data : "balance"},
@@ -140,15 +147,15 @@ function (
                     typeof i === "number" ?
                         i : 0;
             };
-            // Total over all pages at column 5
+            // Total over all pages at column 6
             pageTotal = api
-                .column( 5, { page: "current"} )
+                .column( 6, { page: "current"} )
                 .data()
                 .reduce( function (a, b) {
                     return intVal(a) + intVal(b);
                 }, 0 );
             // Update footer
-            $( api.column( 5 ).footer() ).html(
+            $( api.column( 6 ).footer() ).html(
                 window.formatDecimal(pageTotal, 2)
             );
         },
@@ -174,7 +181,7 @@ function (
                         .css( 'font-size', 'inherit' );
                 },
                 exportOptions: {
-                    columns: [ 0, 2, 3, 4, 5]
+                    columns: [ 0, 2, 3, 4, 5, 6]
                 }
             },
             {
@@ -197,7 +204,7 @@ function (
                         .css( 'font-size', 'inherit' );
                 },
                 exportOptions: {
-                    columns: [ 0, 2, 3, 4, 5]
+                    columns: [ 0, 2, 3, 4, 5, 6]
                 }
             },
             {
@@ -206,7 +213,7 @@ function (
                 titleAttr: "Excel",
                 title: window.store.name + " > Customer List",
                 exportOptions: {
-                    columns: [ 0, 2, 3, 4, 5]
+                    columns: [ 0, 2, 3, 4, 5, 6]
                 }
             },
             {
@@ -215,7 +222,7 @@ function (
                 titleAttr: "CSV",
                 title: window.store.name + " > Customer List",
                 exportOptions: {
-                    columns: [ 0, 2, 3, 4, 5]
+                    columns: [ 0, 2, 3, 4, 5, 6]
                 }
             },
             {
@@ -225,7 +232,7 @@ function (
                 download: "open",
                 title: window.store.name + " > Customer List",
                 exportOptions: {
-                    columns: [ 0, 2, 3, 4, 5]
+                    columns: [ 0, 2, 3, 4, 5, 6]
                 },
                 customize: function (doc) {
                     doc.content[1].table.widths =  Array(doc.content[1].table.body[0].length + 1).join('*').split('');

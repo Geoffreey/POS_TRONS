@@ -477,6 +477,11 @@ function get_postemplate_data($invoice_id)
     } else  {
       $customer_contact = $invoice_info['mobile_number'] ? $invoice_info['mobile_number'] : $invoice_info['customer_email'];
     }
+    // Teléfono secundario (prioriza snapshot en la factura; si no, lee de customers)
+$customer_mobile2 = $invoice_info['customer_mobile2']
+    ?? get_the_customer($invoice_info['customer_id'], 'customer_mobile2')
+    ?? get_the_customer($invoice_info['customer_id'], 'mobile_number2')
+    ?? '';
     // Qrcode
     $qrcode_text = 'InvoiceID: ' . $invoice_id . ', Name: ' .$customer_name;
     include(DIR_VENDOR.'/phpqrcode/qrlib.php');
@@ -505,6 +510,9 @@ function get_postemplate_data($invoice_id)
       'customer_address' => get_the_customer($invoice_info['customer_id'],'customer_address'),
       'customer_nit' => get_the_customer($invoice_info['customer_id'],'customer_nit'),
       'customer_phone' => $invoice_info['customer_mobile'] ? $invoice_info['customer_mobile'] : $invoice_info['mobile_number'],
+      'customer_phone2' => $customer_mobile2,
+      'customer_mobile2' => $customer_mobile2, // alias por si tu plantilla usa este nombre
+      'customer_phone2' => $invoice_info['customer_mobile2'] ?? ($invoice_info['mobile_number2'] ?? ''),
       'customer_email' => $invoice_info['customer_email'],
       'customer_contact' => $customer_contact,
       'gtin' => get_the_customer($invoice_info['customer_id'],'gtin'),

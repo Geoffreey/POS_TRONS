@@ -109,16 +109,16 @@ include ("left_sidebar.php");
                 $hide_colums = "";
                 if (user_group_id() != 1) {
                   if (!has_permission('access', 'create_sell_invoice')) {
-                    $hide_colums .= "6,";
-                  }
-                  if (!has_permission('access', 'read_customer_profile')) {
                     $hide_colums .= "7,";
                   }
-                  if (!has_permission('access', 'update_customer')) {
+                  if (!has_permission('access', 'read_customer_profile')) {
                     $hide_colums .= "8,";
                   }
-                  if (!has_permission('access', 'delete_customer')) {
+                  if (!has_permission('access', 'update_customer')) {
                     $hide_colums .= "9,";
+                  }
+                  if (!has_permission('access', 'delete_customer')) {
+                    $hide_colums .= "10,";
                   }
                 }
               ?> 
@@ -134,6 +134,9 @@ include ("left_sidebar.php");
                     </th>
                     <th class="w-15">
                       <?php echo sprintf(trans('label_phone'), null); ?>
+                    </th>
+                    <th class="w-15">
+                      <?php echo sprintf(trans('label_CELULAR_2'), null); ?>
                     </th>
                     <th class="w-15">
                       <?php echo sprintf(trans('label_nit'), null); ?>
@@ -168,6 +171,9 @@ include ("left_sidebar.php");
                     </th>
                     <th class="w-15">
                       <?php echo sprintf(trans('label_phone'), null); ?>
+                    </th>
+                    <th class="w-15">
+                      <?php echo sprintf(trans('label_CELULAR_2'), null); ?>
                     </th>
                     <th class="w-15">
                       <?php echo sprintf(trans('label_nit'), null); ?>

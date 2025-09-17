@@ -441,6 +441,7 @@ $columns = array(
   ),
   array( 'db' => 'customer_email',  'dt' => 'customer_email' ),
   array( 'db' => 'customer_mobile',  'dt' => 'customer_mobile' ),
+  array( 'db' => 'customer_mobile2',  'dt' => 'customer_mobile2' ),
   array( 'db' => 'customer_nit',  'dt' => 'customer_nit' ),
   array(
       'db'        => 'customer_sex',
