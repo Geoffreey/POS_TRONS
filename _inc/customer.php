@@ -3,6 +3,26 @@ ob_start();
 session_start();
 include ("../_init.php");
 
+$customer_model = registry()->get('loader')->model('customer');
+$store_id = store_id();
+$user_id = user_id();
+
+// Defaults para campos opcionales: evita Undefined index y valida sexo como 'Otros' (3)
+$__defaults = [
+  'dob'              => null,
+  'customer_sex'     => 3,     // 'Otros' (pasa validateInteger y satisface NOT NULL si aplica)
+  'customer_age'     => null,
+  'customer_city'    => '',
+  'customer_country' => ''
+];
+
+// Rellena tanto $_POST como $request->post SOLO si no vienen
+foreach ($__defaults as $k => $v) {
+  if (!isset($_POST[$k]))        $_POST[$k] = $v;
+  if (!isset($request->post[$k])) $request->post[$k] = $v;
+}
+
+
 // Comprobar si el usuario inició sesión o no
 // Si el usuario no ha iniciado sesión, aparece un mensaje de alerta
 if (!is_loggedin()) {

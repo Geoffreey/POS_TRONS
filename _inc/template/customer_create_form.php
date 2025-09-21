@@ -47,14 +47,14 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="dob" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_date_of_birth'), null); ?>
       </label>
       <div class="col-sm-7">
         <input type="date" class="form-control" id="dob" value="<?php echo isset($request->post['dob']) ? $request->post['dob'] : null; ?>" name="dob" autocomplete="off">
       </div>
-    </div>
+    </div>-->
 
     <div class="form-group">
       <label for="customer_email" class="col-sm-3 control-label">
@@ -65,12 +65,12 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_sex" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_sex'), null); ?>
       </label>
       <div class="col-sm-7">
-        <select id="customer_sex" name="customer_sex" class="form-control" required>
+        <select id="customer_sex" name="customer_sex" class="form-control">
           <option value="1"<?php echo isset($request->post['customer_sex']) && $request->post['customer_sex'] == '1' ? ' selected' : null; ?>>
             <?php echo trans('label_male'); ?>
           </option>
@@ -82,16 +82,16 @@
           </option>
         </select>
       </div>
-    </div>
+    </div>-->
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_age" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_age'), null); ?>
       </label>
       <div class="col-sm-7">
         <input type="number" class="form-control" id="customer_age" value="<?php echo isset($request->post['customer_age']) ? $request->post['customer_age'] : null; ?>" name="customer_age" onKeyUp="if(this.value>140){this.value='140';}else if(this.value<0){this.value='0';}">
       </div>
-    </div>
+    </div>-->
 
     <?php if (get_preference('invoice_view') == 'indian_gst') : ?>
     <div class="form-group">
@@ -113,43 +113,43 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_city" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_city'), null); ?>
       </label>
       <div class="col-sm-7">
         <input type="text" class="form-control" id="customer_city" value="<?php echo isset($request->post['customer_city']) ? $request->post['customer_city'] : null; ?>" name="customer_city">
       </div>
-    </div>
+    </div>-->
 
     <?php if (get_preference('invoice_view') == 'indian_gst') : ?>
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_state" class="col-sm-3 control-label">
-        <?php echo sprintf(trans('label_state'), null); ?><i class="required">*</i>
+        <?php echo sprintf(trans('label_state'), null); ?><i class="">*</i>
       </label>
       <div class="col-sm-7">
         <?php echo stateSelector(isset($request->post['customer_state']) ? $request->post['customer_state'] : null, 'customer_state', 'customer_state'); ?>
       </div>
-    </div>
+    </div>-->
     <?php else : ?>
-      <div class="form-group">
+      <!--<div class="form-group">
         <label for="customer_state" class="col-sm-3 control-label">
           <?php echo sprintf(trans('label_state'), null); ?>
         </label>
         <div class="col-sm-7">
           <input type="text" class="form-control" id="customer_state" value="<?php echo isset($request->post['customer_state']) ? $request->post['customer_state'] : null; ?>" name="customer_state">
         </div>
-      </div>
+      </div>-->
     <?php endif; ?>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="country" class="col-sm-3 control-label">
         <?php echo trans('label_country'); ?>
       </label>
       <div class="col-sm-7">
         <?php echo countrySelector(isset($request->post['customer_country']) ? $request->post['customer_country'] : null, 'customer_country', 'customer_country'); ?>
       </div>
-    </div>
+    </div>-->
 
     <div class="form-group">
       <label class="col-sm-3 control-label">
@@ -203,7 +203,6 @@
         <input type="number" class="form-control" id="sort_order" value="<?php echo isset($request->post['sort_order']) ? $request->post['sort_order'] : 0; ?>" name="sort_order" required>
       </div>
     </div>
-
     <div class="form-group">
       <label class="col-sm-3 control-label"></label>
       <div class="col-sm-7">
