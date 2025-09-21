@@ -28,6 +28,15 @@
     </div>
 
     <div class="form-group">
+      <label for="customer_mobile2" class="col-sm-3 control-label">
+        <?php echo trans('label_phone'); ?>
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" id="customer_mobile2" value="<?php echo $customer['customer_mobile2']; ?>" name="customer_mobile2">
+      </div>
+    </div>
+
+    <div class="form-group">
       <label for="customer_nit" class="col-sm-3 control-label">
         <?php echo trans('label_nit'); ?>
       </label>
@@ -54,7 +63,7 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_sex" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_sex'), null); ?>
       </label>
@@ -68,26 +77,26 @@
           </option>
         </select>
       </div>
-    </div>
+    </div>-->
 
-     <div class="form-group">
+     <!--<div class="form-group">
       <label for="customer_age" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_age'), null); ?>
       </label>
       <div class="col-sm-7">
         <input type="number" class="form-control" id="customer_age" value="<?php echo $customer['customer_age']; ?>" name="customer_age" onKeyUp="if(this.value>140){this.value='140';}else if(this.value<0){this.value='0';}">
       </div>
-    </div>
+    </div>-->
 
     <?php if (get_preference('invoice_view') == 'indian_gst') : ?>
-      <div class="form-group">
+      <!--<div class="form-group">
         <label for="gtin" class="col-sm-3 control-label">
           <?php echo trans('label_gtin'); ?>
         </label>
         <div class="col-sm-7">
           <input type="text" class="form-control" id="gtin" value="<?php echo $customer['gtin']; ?>" name="gtin">
         </div>
-      </div>
+      </div>-->
     <?php endif;?>
 
     <div class="form-group">
@@ -99,43 +108,43 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_city" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_city'), null); ?>
       </label>
       <div class="col-sm-7">
         <input type="text" class="form-control" id="customer_city" value="<?php echo $customer['customer_city']; ?>" name="customer_city">
       </div>
-    </div>
+    </div>-->
 
     <?php if (get_preference('invoice_view') == 'indian_gst') : ?>
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="customer_state" class="col-sm-3 control-label">
         <?php echo sprintf(trans('label_state'), null); ?>
       </label>
       <div class="col-sm-7">
         <?php echo stateSelector($customer['customer_state'], 'customer_state', 'customer_state'); ?>
       </div>
-    </div>
+    </div>-->
     <?php else : ?>
-      <div class="form-group">
+      <!--<div class="form-group">
         <label for="customer_state" class="col-sm-3 control-label">
           <?php echo sprintf(trans('label_state'), null); ?>
         </label>
         <div class="col-sm-7">
           <input type="text" class="form-control" id="customer_state" value="<?php echo $customer['customer_state']; ?>" name="customer_state">
         </div>
-      </div>
+      </div>-->
     <?php endif; ?>
 
-    <div class="form-group">
+    <!--<div class="form-group">
       <label for="country" class="col-sm-3 control-label">
         <?php echo trans('label_country'); ?>
       </label>
       <div class="col-sm-7">
         <?php echo countrySelector($customer['customer_country'], 'customer_country', 'customer_country'); ?>
       </div>
-    </div>
+    </div>-->
 
     <div class="form-group">
       <label class="col-sm-3 control-label">
